@@ -16,7 +16,7 @@ import org.apache.edgent.topology.Topology;
  * @author brenno
  */
 public class ControllerEdgent {
-    DirectProvider directProvider;
+    private DirectProvider directProvider;
     
     
     public ControllerEdgent(){
@@ -32,14 +32,6 @@ public class ControllerEdgent {
         return directProvider.newTopology();
     }
     
-    public MqttStreams createMqttStreams(Topology topology, String urlBroker){
-        MqttStreams mqtt = new MqttStreams(topology, urlBroker, null);
-        return mqtt;
-    }
-    
-    public TStream<String> subscribeMqttStreams(String topic, int qos, MqttStreams mqtt){
-        return mqtt.subscribe(topic, qos);
-    }
-    
+      
     
 }

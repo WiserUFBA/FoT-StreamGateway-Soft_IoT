@@ -3,12 +3,12 @@
  * To change this template file, choose Tools | Templates
  * and open the template in the editor.
  */
-package br.ufba.dcc.wiser.soft_iot.analytics.edgent;
+package br.ufba.dcc.wiser.soft_iot.analytics.data;
 
 /**
  *
- * @author Brenno Mello <brennodemello.bm at gmail.com>
+ * @author brenno
  */
-public class TATUConnectorControllerImpl {
+public class TatuStream {
     
 }
