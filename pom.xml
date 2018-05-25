@@ -7,7 +7,7 @@
     <version>1.0.0</version>
     <packaging>bundle</packaging>
 
-    <name>FoT-Analytics-Soft_Iot</name>
+    <name>FoT-Gateway-Analytics-Soft_Iot</name>
 
     <properties>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
@@ -74,7 +74,6 @@
             <version>1.2.0</version>
             <scope>compile</scope>
         </dependency>
-        
               
         <dependency>
             <groupId>org.apache.edgent</groupId>
@@ -82,8 +81,7 @@
             <version>1.2.0</version>
             <scope>compile</scope>
         </dependency>
-        
-                        
+                   
         <dependency>
             <groupId>org.apache.edgent</groupId>
             <artifactId>edgent-api-graph</artifactId>

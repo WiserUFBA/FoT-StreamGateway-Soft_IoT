@@ -16,12 +16,18 @@ public class Activator implements BundleActivator {
         
         Topology topology = controllerEdgent.createTopology();
         MqttStreams mqttStreams = controllerEdgent.createMqttStreams(topology, url);
-        TStream<String> tStream = controllerEdgent.subscribeMqttStreams("dev/res", 0, mqttStreams);
         
+        TStream<String> tStream = controllerEdgent.subscribeMqttStreams("dev/#", 0, mqttStreams);
+        
+        tStream.print();
+        
+
+        /*
         TStream<Double> streamDouble = tStream.map(s -> Double.valueOf(s));
         TStream<Double> streamDoubleFilter = streamDouble.filter(aDouble -> aDouble >= 20);
 
         streamDoubleFilter.print();
+        */
         
         controllerEdgent.deployTopology(topology);
         System.out.println("Start Bundle");
