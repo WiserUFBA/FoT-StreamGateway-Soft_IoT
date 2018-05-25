@@ -19,7 +19,7 @@ import org.slf4j.LoggerFactory;
  *
  * @author brenno
  */
-public class TATUConnector implements Supplier<SensorData>{
+public class TATUConnector implements Consumer<Object>{
 
     private static final Logger logger = LoggerFactory.getLogger(TATUConnector.class);
   
@@ -32,14 +32,11 @@ public class TATUConnector implements Supplier<SensorData>{
     }
 
     @Override
-    public SensorData get() {
-        
-        
-        
-        
+    public void accept(Object t) {
         throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
     }
-    
+
+     
     private class MQTTCallback implements MqttCallback {
 
         @Override
@@ -98,17 +95,6 @@ public class TATUConnector implements Supplier<SensorData>{
         
     }
 
-   public Consumer<String> sink(){
-      
-       
-      return null;
-   }
-   
-   public Supplier<SensorData> source(){
-       
-       
-       
-      return null;
-   }
+  
    
 }
