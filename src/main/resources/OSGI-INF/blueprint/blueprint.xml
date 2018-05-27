@@ -1,0 +1,18 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<blueprint xmlns="http://www.osgi.org/xmlns/blueprint/v1.0.0">
+
+    <bean id="StreamControllerImpl" class="br.ufba.dcc.wiser.soft_iot.analytics.edgent.StreamControllerImpl"
+                    init-method="init" destroy-method="disconnect">
+                    <property name="Url" value="${MQTTHost}" />
+                    <property name="port" value="${MQTTPort}" />
+                    <property name="serverId" value="${MQTTServerId}" />
+                    <property name="username" value="${MQTTUsername}" />
+                    <property name="password" value="${MQTTPassword}" />
+                    <property name="debugModeValue" value="${debugMode}" />
+                    <property name="defaultCollectionTime" value="${DefaultCollectionTimeSensorData}" />
+                    <property name="defaultPublishingTime" value="${DefaultPublishingTimeSensorData}" />
+                    <property name="jsonDevices" value="${DevicesConnected}" />
+    </bean>
+
+    <service ref="StreamController" interface="br.ufba.dcc.wiser.soft_iot.analytics.edgent.StreamController"/>
+</blueprint>

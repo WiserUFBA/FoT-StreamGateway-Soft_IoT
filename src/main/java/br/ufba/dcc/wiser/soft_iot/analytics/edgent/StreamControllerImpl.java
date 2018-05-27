@@ -7,6 +7,7 @@ package br.ufba.dcc.wiser.soft_iot.analytics.edgent;
 
 import br.ufba.dcc.wiser.soft_iot.analytics.model.FoTDeviceStream;
 import br.ufba.dcc.wiser.soft_iot.analytics.model.FoTSensorStream;
+import br.ufba.dcc.wiser.soft_iot.analytics.util.UtilDebug;
 import com.google.gson.Gson;
 import com.google.gson.JsonArray;
 import com.google.gson.JsonElement;
@@ -20,7 +21,8 @@ import org.apache.edgent.topology.Topology;
  *
  * @author Brenno Mello <brennodemello.bm at gmail.com>
  */
-public class StreamControllerImpl {
+public class StreamControllerImpl implements StreamController{
+    
     private String Url;
     private String serverId;
     private String port;
@@ -37,7 +39,10 @@ public class StreamControllerImpl {
     }
     
     public void init(){
+        System.out.println("br.ufba.dcc.wiser.soft_iot.analytics.edgent.StreamControllerImpl.init()");
         try{
+            
+            //UtilDebug.printDebugConsole("Init Stream Controller");
             this.mqttConfig = new MqttConfig(this.Url, this.serverId);
             if(!this.username.isEmpty())
                 this.mqttConfig.setUserName(username);
@@ -51,7 +56,7 @@ public class StreamControllerImpl {
             
             controllerEdgent.deployTopology(this.topology);
         }catch(Exception e){
-            System.out.print(e.getMessage());
+            UtilDebug.printDebugConsole(e.getLocalizedMessage());
         }
     }
     

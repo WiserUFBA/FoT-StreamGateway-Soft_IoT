@@ -7,7 +7,7 @@
     <version>1.0.0</version>
     <packaging>bundle</packaging>
 
-    <name>FoT-Gateway-Analytics-Soft_Iot</name>
+    <name>FoT-Gateway-StreamAnalytics-Soft_Iot</name>
 
     <properties>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
@@ -173,11 +173,7 @@
             <scope>compile</scope>
       </dependency>
         
-      <dependency>
-            <groupId>com.google.code.gson</groupId>
-            <artifactId>gson</artifactId>
-            <version>2.8.2</version>
-      </dependency>
+      
     </dependencies>
 
     <build>
@@ -189,12 +185,15 @@
                 <extensions>true</extensions>
                 <configuration>
                     <instructions>
-                        <Bundle-Activator>br.ufba.dcc.wiser.soft_iot.analytics.activator.Activator</Bundle-Activator>
                         <Embed-Dependency>*;scope=compile|runtime</Embed-Dependency>
                         <Embed-Directory>target/dependency</Embed-Directory>
                     </instructions>
                 </configuration>
             </plugin>
+            
+            
+            
+            
         </plugins>
     </build>
 
