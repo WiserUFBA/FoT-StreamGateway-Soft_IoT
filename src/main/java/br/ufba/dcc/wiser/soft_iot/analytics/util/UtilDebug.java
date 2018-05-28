@@ -13,7 +13,7 @@ public class UtilDebug {
     
     
     public static void printDebugConsole(String message){
-        System.out.print(message);
+        System.out.println(message);
     }
     
 }

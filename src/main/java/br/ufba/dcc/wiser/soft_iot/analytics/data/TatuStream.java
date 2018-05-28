@@ -10,5 +10,9 @@ package br.ufba.dcc.wiser.soft_iot.analytics.data;
  * @author brenno
  */
 public class TatuStream {
+ 
+    public void start(){
+        System.out.print("Start Class");
+    }
     
 }

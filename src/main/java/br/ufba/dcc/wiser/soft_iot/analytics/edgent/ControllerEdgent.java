@@ -5,9 +5,8 @@
  */
 package br.ufba.dcc.wiser.soft_iot.analytics.edgent;
 
-import org.apache.edgent.connectors.mqtt.MqttStreams;
+
 import org.apache.edgent.providers.direct.DirectProvider;
-import org.apache.edgent.topology.TStream;
 import org.apache.edgent.topology.Topology;
 
 

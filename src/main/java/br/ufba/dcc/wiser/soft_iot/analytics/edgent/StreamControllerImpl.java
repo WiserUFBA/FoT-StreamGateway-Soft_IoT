@@ -21,9 +21,9 @@ import org.apache.edgent.topology.Topology;
  *
  * @author Brenno Mello <brennodemello.bm at gmail.com>
  */
-public class StreamControllerImpl implements StreamController{
+public class StreamControllerImpl {
     
-    private String Url;
+    private String serverHost;
     private String serverId;
     private String port;
     private MqttConfig mqttConfig;
@@ -33,17 +33,19 @@ public class StreamControllerImpl implements StreamController{
     private String jsonDevices;
     private Topology topology;
     private List<FoTDeviceStream> listFoTDeviceStream;
+    private int defaultCollectionTime;
+    private int defaultPublishingTime;
     
     public StreamControllerImpl(){
         
     }
     
     public void init(){
-        System.out.println("br.ufba.dcc.wiser.soft_iot.analytics.edgent.StreamControllerImpl.init()");
+       
         try{
             
-            //UtilDebug.printDebugConsole("Init Stream Controller");
-            this.mqttConfig = new MqttConfig(this.Url, this.serverId);
+            UtilDebug.printDebugConsole("Init Stream Controller");
+            this.mqttConfig = new MqttConfig(this.serverHost, this.serverId);
             if(!this.username.isEmpty())
                 this.mqttConfig.setUserName(username);
             if(!this.password.isEmpty())
@@ -56,7 +58,7 @@ public class StreamControllerImpl implements StreamController{
             
             controllerEdgent.deployTopology(this.topology);
         }catch(Exception e){
-            UtilDebug.printDebugConsole(e.getLocalizedMessage());
+            UtilDebug.printDebugConsole("Error init StreamController" + e.getMessage());
         }
     }
     
@@ -99,4 +101,102 @@ public class StreamControllerImpl implements StreamController{
             }
         }
     }
+
+    public String getServerHost() {
+        return serverHost;
+    }
+
+    public void setServerHost(String serverHost) {
+        this.serverHost = serverHost;
+    }
+
+    public String getServerId() {
+        return serverId;
+    }
+
+    public void setServerId(String serverId) {
+        this.serverId = serverId;
+    }
+
+    public String getPort() {
+        return port;
+    }
+
+    public void setPort(String port) {
+        this.port = port;
+    }
+
+    public MqttConfig getMqttConfig() {
+        return mqttConfig;
+    }
+
+    public void setMqttConfig(MqttConfig mqttConfig) {
+        this.mqttConfig = mqttConfig;
+    }
+
+    public String getUsername() {
+        return username;
+    }
+
+    public void setUsername(String username) {
+        this.username = username;
+    }
+
+    public String getPassword() {
+        return password;
+    }
+
+    public void setPassword(String password) {
+        this.password = password;
+    }
+
+    public boolean isDebugModeValue() {
+        return debugModeValue;
+    }
+
+    public void setDebugModeValue(boolean debugModeValue) {
+        this.debugModeValue = debugModeValue;
+    }
+
+    public String getJsonDevices() {
+        return jsonDevices;
+    }
+
+    public void setJsonDevices(String jsonDevices) {
+        this.jsonDevices = jsonDevices;
+    }
+
+    public Topology getTopology() {
+        return topology;
+    }
+
+    public void setTopology(Topology topology) {
+        this.topology = topology;
+    }
+
+    public List<FoTDeviceStream> getListFoTDeviceStream() {
+        return listFoTDeviceStream;
+    }
+
+    public void setListFoTDeviceStream(List<FoTDeviceStream> listFoTDeviceStream) {
+        this.listFoTDeviceStream = listFoTDeviceStream;
+    }
+
+    public int getDefaultCollectionTime() {
+        return defaultCollectionTime;
+    }
+
+    public void setDefaultCollectionTime(int defaultCollectionTime) {
+        this.defaultCollectionTime = defaultCollectionTime;
+    }
+
+    public int getDefaultPublishingTime() {
+        return defaultPublishingTime;
+    }
+
+    public void setDefaultPublishingTime(int defaultPublishingTime) {
+        this.defaultPublishingTime = defaultPublishingTime;
+    }
+    
+    
 }
