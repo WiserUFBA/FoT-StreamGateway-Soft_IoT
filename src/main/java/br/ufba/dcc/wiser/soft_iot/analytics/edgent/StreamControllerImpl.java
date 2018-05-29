@@ -45,6 +45,9 @@ public class StreamControllerImpl {
         try{
             
             UtilDebug.printDebugConsole("Init Stream Controller");
+            UtilDebug.printDebugConsole(this.serverHost + " " + this.port);
+            UtilDebug.printDebugConsole(this.jsonDevices);
+            
             this.mqttConfig = new MqttConfig(this.serverHost, this.serverId);
             if(!this.username.isEmpty())
                 this.mqttConfig.setUserName(username);
@@ -69,6 +72,8 @@ public class StreamControllerImpl {
     public void loadFoTDeviceStream(){
         Gson gson = new Gson();
         JsonElement tree  = gson.toJsonTree(this.jsonDevices);
+        UtilDebug.printDebugConsole(String.valueOf(tree.getAsJsonPrimitive().getAsJsonArray()), this.debugModeValue);
+        //UtilDebug.printDebugConsole(tree.getAsJsonObject().toString(), this.debugModeValue);
         JsonArray jarray = tree.getAsJsonArray();
         for (JsonElement jsonElement : jarray) {
             if(jsonElement.isJsonObject()){

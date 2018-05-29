@@ -44,11 +44,12 @@
     </bean>
     -->
     
-    <cm:property-placeholder persistent-id="br.ufba.dcc.wiser.soft_iot.gateway.stream_analytics.cfg"
+    <cm:property-placeholder persistent-id="br.ufba.dcc.wiser.soft_iot.gateway.stream_analytics"
 		update-strategy="reload">
-		<cm:default-properties>
-			<cm:property name="MQTTHost" value="localhost" />
-			<cm:property name="MQTTPort" value="1883" />
+		
+                <cm:default-properties>
+			<cm:property name="MQTTHost" value="" />
+			<cm:property name="MQTTPort" value="" />
 			<cm:property name="MQTTUsername" value="" />
 			<cm:property name="MQTTPassword" value="" />
 			<cm:property name="MQTTServerId" value="FoTGateway" />
@@ -59,6 +60,7 @@
 			<cm:property name="debugMode" value="false" />
                         <cm:property name="DevicesConnected" value="[]" />
 		</cm:default-properties>
+                
 	</cm:property-placeholder>
 
 

@@ -16,4 +16,8 @@ public class UtilDebug {
         System.out.println(message);
     }
     
+    public static void printDebugConsole(String message, boolean print){
+        if(print)
+            System.out.println(message);
+    }
 }
