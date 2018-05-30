@@ -12,6 +12,7 @@ import com.google.gson.Gson;
 import com.google.gson.JsonArray;
 import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
+import com.google.gson.JsonParser;
 import java.util.ArrayList;
 import java.util.List;
 import org.apache.edgent.connectors.mqtt.MqttConfig;
@@ -42,17 +43,19 @@ public class StreamControllerImpl {
     
     public void init(){
        
-        try{
+        //try{
             
             UtilDebug.printDebugConsole("Init Stream Controller");
             UtilDebug.printDebugConsole(this.serverHost + " " + this.port);
-            UtilDebug.printDebugConsole(this.jsonDevices);
+            //UtilDebug.printDebugConsole(this.jsonDevices);
             
-            this.mqttConfig = new MqttConfig(this.serverHost, this.serverId);
+            this.mqttConfig = new MqttConfig(this.serverHost + this.port, this.serverId);
             if(!this.username.isEmpty())
                 this.mqttConfig.setUserName(username);
             if(!this.password.isEmpty())
                 this.mqttConfig.setPassword(password.toCharArray());
+            
+            this.listFoTDeviceStream = new ArrayList<>();
             
             ControllerEdgent controllerEdgent = new ControllerEdgent();
             this.topology = controllerEdgent.createTopology();
@@ -60,9 +63,10 @@ public class StreamControllerImpl {
             
             
             controllerEdgent.deployTopology(this.topology);
+        /*    
         }catch(Exception e){
             UtilDebug.printDebugConsole("Error init StreamController" + e.getMessage());
-        }
+        }*/
     }
     
     public void disconnect(){
@@ -70,18 +74,28 @@ public class StreamControllerImpl {
     }
     
     public void loadFoTDeviceStream(){
-        Gson gson = new Gson();
-        JsonElement tree  = gson.toJsonTree(this.jsonDevices);
-        UtilDebug.printDebugConsole(String.valueOf(tree.getAsJsonPrimitive().getAsJsonArray()), this.debugModeValue);
+        JsonParser parser = new JsonParser();
+        JsonElement element = parser.parse(this.jsonDevices);
+        JsonArray jarray = element.getAsJsonArray();
+        //Gson gson = new Gson();
+        //JsonElement tree  = gson.toJsonTree(this.jsonDevices);
+        //UtilDebug.printDebugConsole(String.valueOf(tree.getAsJsonPrimitive().getAsJsonArray()), this.debugModeValue);
         //UtilDebug.printDebugConsole(tree.getAsJsonObject().toString(), this.debugModeValue);
-        JsonArray jarray = tree.getAsJsonArray();
+        //JsonArray jarray = tree.getAsJsonArray();
+        UtilDebug.printDebugConsole("Tamanho do array: " + jarray.size());
+        
         for (JsonElement jsonElement : jarray) {
             if(jsonElement.isJsonObject()){
+                
+                
                 FoTDeviceStream fotDeviceStream = new FoTDeviceStream(this.topology, this.mqttConfig);
                 JsonObject fotElement = jsonElement.getAsJsonObject();
                 fotDeviceStream.setDeviceId(fotElement.get("id").getAsString());
                 fotDeviceStream.setLatitude(fotElement.get("latitude").getAsFloat());
                 fotDeviceStream.setLongitude(fotElement.get("latitude").getAsFloat());
+                
+                UtilDebug.printDebugConsole(fotDeviceStream.getDeviceId());
+                
                 
                 JsonArray jsonArraySensors = fotElement.getAsJsonArray("sensors");
                 List<FoTSensorStream> listFoTSensorStream = new ArrayList<FoTSensorStream>();
@@ -90,12 +104,17 @@ public class StreamControllerImpl {
                 
                 for (JsonElement jsonElementSensor : jsonArraySensors) {
                     if(jsonElementSensor.isJsonObject()){
-                        FoTSensorStream fotSensorStream = new FoTSensorStream(this.topology, this.mqttConfig);
                         JsonObject fotSensor = jsonElementSensor.getAsJsonObject();
-                        fotSensorStream.setSensorid(fotSensor.get("id").getAsString());
+                         String sensorID = fotSensor.get("id").getAsString();
+                        
+                        FoTSensorStream fotSensorStream = new FoTSensorStream(this.topology, this.mqttConfig, sensorID);
+                        
                         fotSensorStream.setType(fotSensor.get("type").getAsString());
                         fotSensorStream.setCollectionTime(fotSensor.get("collection_time").getAsInt());
                         fotSensorStream.setPublishingTime(fotSensor.get("publishing_time").getAsInt());
+                        
+                        UtilDebug.printDebugConsole(fotSensorStream.getSensorid());
+                                
                         listFoTSensorStream.add(fotSensorStream);
                     }   
                 }

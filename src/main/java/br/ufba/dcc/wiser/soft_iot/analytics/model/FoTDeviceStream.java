@@ -25,7 +25,7 @@ public class FoTDeviceStream {
     private float latitude;
     private float longitude;
     private List<FoTSensorStream> listFoTSensorStream;
-    private String topicPrefix = "";
+
     private final MqttConfig mqttConfig;
         
    
@@ -45,15 +45,7 @@ public class FoTDeviceStream {
         this.deviceId = "";
         if(this.topology == null)
             throw new IllegalArgumentException("Error starting FoTDeviceStream");
-        
-        
-        
-        
-        topicPrefix = properties.getProperty("mqttDevice.topic.prefix", topicPrefix);
-        
-        
-         
-        
+           
         
         if (mqttConfig == null) {
             mqttConfig = MqttConfig.fromProperties(properties);
@@ -88,14 +80,6 @@ public class FoTDeviceStream {
         this.listFoTSensorStream = listFoTSensorStream;
     }
 
-    public String getTopicPrefix() {
-        return topicPrefix;
-    }
-
-    public void setTopicPrefix(String topicPrefix) {
-        this.topicPrefix = topicPrefix;
-    }
-    
     public String getDeviceId() {
         return deviceId;
     }

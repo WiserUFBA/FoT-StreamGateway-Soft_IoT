@@ -19,8 +19,7 @@ public class ControllerEdgent {
     
     
     public ControllerEdgent(){
-        directProvider = new DirectProvider();
-               
+        directProvider = new DirectProvider();               
     }
  
     public void deployTopology(Topology topology){
