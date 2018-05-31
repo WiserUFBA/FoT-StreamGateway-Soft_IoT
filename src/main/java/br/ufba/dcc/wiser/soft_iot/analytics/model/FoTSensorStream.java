@@ -84,9 +84,17 @@ public class FoTSensorStream {
 
    private void initGetSensorData(){
        UtilDebug.printDebugConsole(TATUWrapper.topicBase + getSensorid() + "/#");
-       TStream<String> tStream = this.connector.subscribe(TATUWrapper.topicBase + getSensorid() + "/#", this.qos); 
+       TStream<String> tStream = this.connector.subscribe(TATUWrapper.topicBase + getSensorid() + "/#", this.qos);
+       tStream.map((t) -> {
+           
+           return null; //To change body of generated lambdas, choose Tools | Templates.
+       });
        tStream.print();
        
+   }
+   
+   public void parseTatuMessage(){
+       TATUWrapper.parseTATUAnswerToListSensorData(null, null, null, null);
    }
    
    public String getDeviceTopic(){
