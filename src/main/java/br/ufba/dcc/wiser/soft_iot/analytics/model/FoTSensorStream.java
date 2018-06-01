@@ -8,11 +8,18 @@ package br.ufba.dcc.wiser.soft_iot.analytics.model;
 
 
 import br.ufba.dcc.wiser.soft_iot.analytics.util.UtilDebug;
+import br.ufba.dcc.wiser.soft_iot.entities.SensorData;
 import br.ufba.dcc.wiser.soft_iot.tatu.TATUWrapper;
+import com.google.gson.JsonObject;
+import java.util.ArrayList;
+import java.util.Calendar;
+import java.util.List;
 import org.apache.edgent.connectors.mqtt.MqttConfig;
 import org.apache.edgent.connectors.mqtt.MqttStreams;
 import org.apache.edgent.topology.TStream;
 import org.apache.edgent.topology.Topology;
+import org.json.JSONArray;
+import org.json.JSONObject;
 
 /**
  *
@@ -85,16 +92,38 @@ public class FoTSensorStream {
    private void initGetSensorData(){
        UtilDebug.printDebugConsole(TATUWrapper.topicBase + getSensorid() + "/#");
        TStream<String> tStream = this.connector.subscribe(TATUWrapper.topicBase + getSensorid() + "/#", this.qos);
-       tStream.map((t) -> {
-           
-           return null; //To change body of generated lambdas, choose Tools | Templates.
-       });
+       TStream<List<SensorData>> tStreamData = tStream.map((tuple) -> {
+                                                
+                                                List<SensorData> listSensorData = parseTatuMessage(tuple);
+                                                return listSensorData; 
+                                            });
+       
+       
        tStream.print();
        
    }
    
-   public void parseTatuMessage(){
-       TATUWrapper.parseTATUAnswerToListSensorData(null, null, null, null);
+   public List<SensorData> parseTatuMessage(String message){
+       List<SensorData> listSensorData = new ArrayList<SensorData>();
+		try{
+			JSONObject json = new JSONObject(answer);
+			JSONArray sensorValues = json.getJSONObject("BODY").getJSONArray(
+					sensor.getId());
+			int collectTime = json.getJSONObject("BODY").getJSONObject("FLOW")
+					.getInt("collect");
+			Calendar calendar = Calendar.getInstance();
+			calendar.setTime(baseDate);
+			for (int i = 0; i < sensorValues.length(); i++) {
+				Integer valueInt = sensorValues.getInt(i);
+				String value = valueInt.toString();
+				SensorData sensorData = new SensorData(device, sensor,value,calendar.getTime(),calendar.getTime());
+				listSensorData.add(sensorData);
+				calendar.add(Calendar.MILLISECOND, collectTime);
+			}
+		}catch(org.json.JSONException e){
+                    
+		}
+		return listSensorData;
    }
    
    public String getDeviceTopic(){
