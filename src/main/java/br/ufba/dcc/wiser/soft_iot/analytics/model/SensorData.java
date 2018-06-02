@@ -5,10 +5,14 @@
  */
 package br.ufba.dcc.wiser.soft_iot.analytics.model;
 
+import java.util.Date;
+
 /**
  *
  * @author brenno
  */
 public class SensorData {
-    
+    private String value;
+    private Date startTime;
+    private Date endTime;
 }

@@ -16,6 +16,7 @@ import java.util.Calendar;
 import java.util.List;
 import org.apache.edgent.connectors.mqtt.MqttConfig;
 import org.apache.edgent.connectors.mqtt.MqttStreams;
+import org.apache.edgent.topology.TSink;
 import org.apache.edgent.topology.TStream;
 import org.apache.edgent.topology.Topology;
 import org.json.JSONArray;
@@ -35,8 +36,8 @@ public class FoTSensorStream {
     private Topology topology;
     private String topicPrefix = "";
     private int qos;
+    private FoTDeviceStream fotDeviceStream; 
     
-	
     public FoTSensorStream(Topology topology, MqttConfig mqttConfig, String Sensorid){
         this.topology = topology;
         this.Sensorid = Sensorid;
@@ -47,8 +48,9 @@ public class FoTSensorStream {
             throw new ExceptionInInitializerError("Error starting sensor");
         this.qos = 0;
         initGetSensorData();
-    }
-
+    }   
+    
+    
     public String getSensorid() {
         return Sensorid;
     }
@@ -89,6 +91,38 @@ public class FoTSensorStream {
         this.connector = connector;
     }
 
+    public Topology getTopology() {
+        return topology;
+    }
+
+    public void setTopology(Topology topology) {
+        this.topology = topology;
+    }
+
+    public String getTopicPrefix() {
+        return topicPrefix;
+    }
+
+    public void setTopicPrefix(String topicPrefix) {
+        this.topicPrefix = topicPrefix;
+    }
+
+    public int getQos() {
+        return qos;
+    }
+
+    public void setQos(int qos) {
+        this.qos = qos;
+    }
+
+    public FoTDeviceStream getFotDeviceStream() {
+        return fotDeviceStream;
+    }
+
+    public void setFotDeviceStream(FoTDeviceStream fotDeviceStream) {
+        this.fotDeviceStream = fotDeviceStream;
+    }
+	
    private void initGetSensorData(){
        UtilDebug.printDebugConsole(TATUWrapper.topicBase + getSensorid() + "/#");
        TStream<String> tStream = this.connector.subscribe(TATUWrapper.topicBase + getSensorid() + "/#", this.qos);
@@ -97,6 +131,7 @@ public class FoTSensorStream {
                                                 List<SensorData> listSensorData = parseTatuMessage(tuple);
                                                 return listSensorData; 
                                             });
+       
        
        
        tStream.print();
