@@ -10,7 +10,10 @@ package br.ufba.dcc.wiser.soft_iot.analytics.model;
 import br.ufba.dcc.wiser.soft_iot.analytics.util.UtilDebug;
 import br.ufba.dcc.wiser.soft_iot.entities.SensorData;
 import br.ufba.dcc.wiser.soft_iot.tatu.TATUWrapper;
+import com.google.gson.JsonArray;
+import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
+import com.google.gson.JsonParser;
 import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.List;
@@ -106,6 +109,11 @@ public class FoTSensorStream {
    public List<SensorData> parseTatuMessage(String message){
        List<SensorData> listSensorData = new ArrayList<SensorData>();
 		try{
+                     JsonParser parser = new JsonParser();
+                     JsonElement element = parser.parse(message);
+                     
+                    
+                    
 			JSONObject json = new JSONObject(answer);
 			JSONArray sensorValues = json.getJSONObject("BODY").getJSONArray(
 					sensor.getId());
@@ -116,7 +124,7 @@ public class FoTSensorStream {
 			for (int i = 0; i < sensorValues.length(); i++) {
 				Integer valueInt = sensorValues.getInt(i);
 				String value = valueInt.toString();
-				SensorData sensorData = new SensorData(device, sensor,value,calendar.getTime(),calendar.getTime());
+				SensorData sensorData = new SensorData(device, sensor, value, calendar.getTime(), calendar.getTime());
 				listSensorData.add(sensorData);
 				calendar.add(Calendar.MILLISECOND, collectTime);
 			}
