@@ -8,7 +8,6 @@ package br.ufba.dcc.wiser.soft_iot.analytics.edgent;
 import br.ufba.dcc.wiser.soft_iot.analytics.model.FoTDeviceStream;
 import br.ufba.dcc.wiser.soft_iot.analytics.model.FoTSensorStream;
 import br.ufba.dcc.wiser.soft_iot.analytics.util.UtilDebug;
-import com.google.gson.Gson;
 import com.google.gson.JsonArray;
 import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
@@ -107,7 +106,7 @@ public class StreamControllerImpl {
                         JsonObject fotSensor = jsonElementSensor.getAsJsonObject();
                          String sensorID = fotSensor.get("id").getAsString();
                         
-                        FoTSensorStream fotSensorStream = new FoTSensorStream(this.topology, this.mqttConfig, sensorID);
+                        FoTSensorStream fotSensorStream = new FoTSensorStream(this.topology, this.mqttConfig, sensorID, fotDeviceStream);
                         
                         fotSensorStream.setType(fotSensor.get("type").getAsString());
                         fotSensorStream.setCollectionTime(fotSensor.get("collection_time").getAsInt());

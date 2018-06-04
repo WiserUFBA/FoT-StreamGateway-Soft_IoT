@@ -41,9 +41,10 @@ public class FoTSensorStream {
     private int qos;
     private FoTDeviceStream fotDeviceStream; 
     
-    public FoTSensorStream(Topology topology, MqttConfig mqttConfig, String Sensorid){
+    public FoTSensorStream(Topology topology, MqttConfig mqttConfig, String Sensorid, FoTDeviceStream fotDeviceStream){
         this.topology = topology;
         this.Sensorid = Sensorid;
+        this.fotDeviceStream = fotDeviceStream;
 	UtilDebug.printDebugConsole(mqttConfig.getServerURLs()[0]);
         this.connector = new MqttStreams(topology, mqttConfig.getServerURLs()[0], Sensorid);
         
@@ -127,8 +128,8 @@ public class FoTSensorStream {
     }
 	
    private void initGetSensorData(){
-       UtilDebug.printDebugConsole(TATUWrapper.topicBase + getSensorid() + "/#");
-       TStream<String> tStream = this.connector.subscribe(TATUWrapper.topicBase + getSensorid() + "/#", this.qos);
+       UtilDebug.printDebugConsole(TATUWrapper.topicBase + this.fotDeviceStream.getDeviceId() + "/#");
+       TStream<String> tStream = this.connector.subscribe(TATUWrapper.topicBase + this.fotDeviceStream.getDeviceId() + "/#", this.qos);
        TStream<List<SensorData>> tStreamData = tStream.map((tuple) -> {
                                                 
                                                 List<SensorData> listSensorData = parseTatuMessage(tuple);
