@@ -130,6 +130,27 @@ public class FoTSensorStream {
    private void initGetSensorData(){
        UtilDebug.printDebugConsole(TATUWrapper.topicBase + this.fotDeviceStream.getDeviceId() + "/#");
        TStream<String> tStream = this.connector.subscribe(TATUWrapper.topicBase + this.fotDeviceStream.getDeviceId() + "/#", this.qos);
+       
+       //tStream.print();
+       
+       TStream<String> tempObj = tStream.map(tuple -> {
+			JsonObject jObj = new JsonObject();
+			jObj = jObj.getAsJsonObject(tuple);
+                        
+                        JsonObject body = jObj.getAsJsonObject("BODY");
+                        JsonArray jsonArray = body.getAsJsonArray("NitriteNO2Sensor");
+                        
+                        
+                        String ret = "Nada";
+                        if(jsonArray != null)
+                           ret = jsonArray.toString();
+                            
+			return ret;
+		});
+       
+       tempObj.print();
+       
+       /*
        TStream<List<SensorData>> tStreamData = tStream.map((tuple) -> {
                                                 
                                                 List<SensorData> listSensorData = parseTatuMessage(tuple);
@@ -139,7 +160,7 @@ public class FoTSensorStream {
        
        
        tStream.print();
-       
+       */
    }
    
    public List<SensorData> parseTatuMessage(String message){
@@ -148,9 +169,9 @@ public class FoTSensorStream {
                      JsonParser parser = new JsonParser();
                      JsonElement element = parser.parse(message);
                      
-                    
-                    
-			JSONObject json = new JSONObject(answer);
+                     
+                        /*
+			JSONObject json = new JSONObject(message);
 			JSONArray sensorValues = json.getJSONObject("BODY").getJSONArray(
 					sensor.getId());
 			int collectTime = json.getJSONObject("BODY").getJSONObject("FLOW")
@@ -164,6 +185,8 @@ public class FoTSensorStream {
 				listSensorData.add(sensorData);
 				calendar.add(Calendar.MILLISECOND, collectTime);
 			}
+                        */
+                        
 		}catch(org.json.JSONException e){
                     
 		}
