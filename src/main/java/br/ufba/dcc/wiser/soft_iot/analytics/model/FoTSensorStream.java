@@ -134,17 +134,36 @@ public class FoTSensorStream {
        //tStream.print();
        
        TStream<String> tempObj = tStream.map(tuple -> {
-			JsonObject jObj = new JsonObject();
-			jObj = jObj.getAsJsonObject(tuple);
+                    String ret = "Nada";
+                    try{
                         
-                        JsonObject body = jObj.getAsJsonObject("BODY");
-                        JsonArray jsonArray = body.getAsJsonArray("NitriteNO2Sensor");
+                        if(TATUWrapper.isValidTATUAnswer(tuple)){
+                                
+                                
+                            JsonParser parser = new JsonParser();
+
+                            JsonElement element = parser.parse(tuple);
+                            JsonObject jObject = element.getAsJsonObject();
+
+
+                            JsonObject body = jObject.getAsJsonObject("BODY");
+
+                            JsonArray jsonArray = body.getAsJsonArray(this.Sensorid);
+
+                            if(jsonArray != null){
+                                for (int i = 0; i < jsonArray.size(); i++) {
+
+                                }
+                            }
+
+                            System.out.println(jsonArray.get(0));
+
+                        }
                         
                         
-                        String ret = "Nada";
-                        if(jsonArray != null)
-                           ret = jsonArray.toString();
-                            
+                    }catch(Exception e){
+                        System.out.println("Erro parser: " + e.getMessage());
+                    }        
 			return ret;
 		});
        
