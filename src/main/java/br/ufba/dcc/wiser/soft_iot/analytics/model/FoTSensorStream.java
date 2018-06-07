@@ -134,18 +134,22 @@ public class FoTSensorStream {
        //tStream.print();
        
        TStream<String> tempObj = tStream.map(tuple -> {
-			JsonObject jObj = new JsonObject();
-			jObj = jObj.getAsJsonObject(tuple);
+			String ret = "Nada";
+                        try{
+                            JsonObject jObj = new JsonObject();
+                            jObj = jObj.getAsJsonObject(tuple);
                         
-                        JsonObject body = jObj.getAsJsonObject("BODY");
-                        JsonArray jsonArray = body.getAsJsonArray("NitriteNO2Sensor");
+                            JsonObject body = jObj.getAsJsonObject("BODY");
+                            JsonArray jsonArray = body.getAsJsonArray("NitriteNO2Sensor");
                         
                         
-                        String ret = "Nada";
-                        if(jsonArray != null)
-                           ret = jsonArray.toString();
                             
-			return ret;
+                            if(jsonArray != null)
+                                ret = jsonArray.toString();
+                        }catch(Exception e){
+                            System.out.print(e.getMessage());
+                        }   
+                        return ret;
 		});
        
        tempObj.print();
