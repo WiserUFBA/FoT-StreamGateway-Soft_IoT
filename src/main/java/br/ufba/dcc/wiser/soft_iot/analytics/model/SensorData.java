@@ -5,7 +5,8 @@
  */
 package br.ufba.dcc.wiser.soft_iot.analytics.model;
 
-import java.util.Date;
+import java.time.LocalDateTime;
+
 
 /**
  *
@@ -13,6 +14,52 @@ import java.util.Date;
  */
 public class SensorData {
     private String value;
-    private Date startTime;
-    private Date endTime;
+    private FoTDeviceStream device;
+    private FoTSensorStream sensor;
+    private LocalDateTime localDateTime;
+
+    public SensorData(String value, LocalDateTime localDateTime, 
+            FoTSensorStream sensor, FoTDeviceStream device){
+        this.value = value;
+        this.localDateTime = localDateTime;
+        this.sensor = sensor;
+        this.device = device;
+    }
+    
+    public String getValue() {
+        return value;
+    }
+
+    public void setValue(String value) {
+        this.value = value;
+    }
+
+
+    public FoTDeviceStream getDevice() {
+        return device;
+    }
+
+    public void setDevice(FoTDeviceStream device) {
+        this.device = device;
+    }
+
+    public FoTSensorStream getSensor() {
+        return sensor;
+    }
+
+    public void setSensor(FoTSensorStream sensor) {
+        this.sensor = sensor;
+    }
+
+    public LocalDateTime getLocalDateTime() {
+        return localDateTime;
+    }
+
+    public void setLocalDateTime(LocalDateTime localDateTime) {
+        this.localDateTime = localDateTime;
+    }
+    
+    
+    
+	
 }

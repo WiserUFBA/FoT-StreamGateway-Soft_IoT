@@ -8,22 +8,19 @@ package br.ufba.dcc.wiser.soft_iot.analytics.model;
 
 
 import br.ufba.dcc.wiser.soft_iot.analytics.util.UtilDebug;
-import br.ufba.dcc.wiser.soft_iot.entities.SensorData;
 import br.ufba.dcc.wiser.soft_iot.tatu.TATUWrapper;
 import com.google.gson.JsonArray;
 import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
 import com.google.gson.JsonParser;
+import java.time.LocalDateTime;
 import java.util.ArrayList;
-import java.util.Calendar;
 import java.util.List;
 import org.apache.edgent.connectors.mqtt.MqttConfig;
 import org.apache.edgent.connectors.mqtt.MqttStreams;
-import org.apache.edgent.topology.TSink;
 import org.apache.edgent.topology.TStream;
 import org.apache.edgent.topology.Topology;
-import org.json.JSONArray;
-import org.json.JSONObject;
+
 
 /**
  *
@@ -133,23 +130,40 @@ public class FoTSensorStream {
        
        //tStream.print();
        
-       TStream<String> tempObj = tStream.map(tuple -> {
-			String ret = "Nada";
-                        try{
-                            JsonObject jObj = new JsonObject();
-                            jObj = jObj.getAsJsonObject(tuple);
+       TStream<List<SensorData>> tempObj = tStream.map(tuple -> {
+                    List<SensorData> listData = new ArrayList<SensorData>();
+                    try{
                         
-                            JsonObject body = jObj.getAsJsonObject("BODY");
-                            JsonArray jsonArray = body.getAsJsonArray("NitriteNO2Sensor");
+                        if(TATUWrapper.isValidTATUAnswer(tuple)){
+                                
+                                
+                            JsonParser parser = new JsonParser();
+
+                            JsonElement element = parser.parse(tuple);
+                            JsonObject jObject = element.getAsJsonObject();
+
+
+                            JsonObject body = jObject.getAsJsonObject("BODY");
+
+                            JsonArray jsonArray = body.getAsJsonArray(this.Sensorid);
+
+                            if(jsonArray != null){
+                                for (int i = 0; i < jsonArray.size(); i++) {
+                                    JsonElement jsonElement = jsonArray.get(i);
+                                    String value = String.valueOf(jsonElement.getAsDouble());
+                                    SensorData sensorData = new SensorData(value, LocalDateTime.MIN, this, fotDeviceStream);    
+                                }
+                            }
+
+                            System.out.println(jsonArray.get(0));
+
+                        }
                         
                         
-                            
-                            if(jsonArray != null)
-                                ret = jsonArray.toString();
-                        }catch(Exception e){
-                            System.out.print(e.getMessage());
-                        }   
-                        return ret;
+                    }catch(Exception e){
+                        System.out.println("Erro parser: " + e.getMessage());
+                    }        
+			return null;
 		});
        
        tempObj.print();
