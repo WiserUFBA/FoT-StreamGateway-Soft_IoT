@@ -132,6 +132,7 @@ public class FoTSensorStream {
        
        TStream<List<SensorData>> tempObj = tStream.map(tuple -> {
                     List<SensorData> listData = new ArrayList<SensorData>();
+                    
                     try{
                         
                         if(TATUWrapper.isValidTATUAnswer(tuple)){
@@ -148,25 +149,40 @@ public class FoTSensorStream {
                             JsonArray jsonArray = body.getAsJsonArray(this.Sensorid);
 
                             if(jsonArray != null){
+                                SensorData sensorData = null;
                                 for (int i = 0; i < jsonArray.size(); i++) {
                                     JsonElement jsonElement = jsonArray.get(i);
                                     String value = String.valueOf(jsonElement.getAsDouble());
-                                    SensorData sensorData = new SensorData(value, LocalDateTime.MIN, this, fotDeviceStream);    
+                                    System.out.println(LocalDateTime.now().toString());
+                                    sensorData = new SensorData(value, LocalDateTime.now(), this, fotDeviceStream);  
+                                    if(sensorData != null) 
+                                        listData.add(sensorData);
                                 }
+                                
                             }
-
-                            System.out.println(jsonArray.get(0));
+                            
+                            System.out.println("--------------------------------------------------");
+                            for (SensorData sensorDatas : listData) {
+                                
+                                System.out.println("Device ==> " + sensorDatas.getDevice().getDeviceId());
+                                System.out.println("Sensor ==> " + sensorDatas.getSensor().getSensorid());
+                                System.out.println("Data ==> " + sensorDatas.getValue());
+                                System.out.println("Time ==> " + sensorDatas.getLocalDateTime().toString());
+                                
+                            }
+                            System.out.println("--------------------------------------------------");
 
                         }
+                        
                         
                         
                     }catch(Exception e){
                         System.out.println("Erro parser: " + e.getMessage());
                     }        
-			return null;
+                    return listData;
 		});
        
-       tempObj.print();
+       //tempObj.print();
        
        /*
        TStream<List<SensorData>> tStreamData = tStream.map((tuple) -> {
@@ -182,33 +198,8 @@ public class FoTSensorStream {
    }
    
    public List<SensorData> parseTatuMessage(String message){
-       List<SensorData> listSensorData = new ArrayList<SensorData>();
-		try{
-                     JsonParser parser = new JsonParser();
-                     JsonElement element = parser.parse(message);
-                     
-                     
-                        /*
-			JSONObject json = new JSONObject(message);
-			JSONArray sensorValues = json.getJSONObject("BODY").getJSONArray(
-					sensor.getId());
-			int collectTime = json.getJSONObject("BODY").getJSONObject("FLOW")
-					.getInt("collect");
-			Calendar calendar = Calendar.getInstance();
-			calendar.setTime(baseDate);
-			for (int i = 0; i < sensorValues.length(); i++) {
-				Integer valueInt = sensorValues.getInt(i);
-				String value = valueInt.toString();
-				SensorData sensorData = new SensorData(device, sensor, value, calendar.getTime(), calendar.getTime());
-				listSensorData.add(sensorData);
-				calendar.add(Calendar.MILLISECOND, collectTime);
-			}
-                        */
-                        
-		}catch(org.json.JSONException e){
-                    
-		}
-		return listSensorData;
+    
+       return null;  
    }
    
    public String getDeviceTopic(){

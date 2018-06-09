@@ -42,11 +42,11 @@ public class StreamControllerImpl {
     
     public void init(){
        
-        //try{
+        try{
             
             UtilDebug.printDebugConsole("Init Stream Controller");
             UtilDebug.printDebugConsole(this.serverHost + " " + this.port);
-            //UtilDebug.printDebugConsole(this.jsonDevices);
+            UtilDebug.printDebugConsole(this.jsonDevices);
             
             this.mqttConfig = new MqttConfig(this.serverHost + this.port, this.serverId);
             if(!this.username.isEmpty())
@@ -62,10 +62,10 @@ public class StreamControllerImpl {
             
             
             controllerEdgent.deployTopology(this.topology);
-        /*    
+            
         }catch(Exception e){
-            UtilDebug.printDebugConsole("Error init StreamController" + e.getMessage());
-        }*/
+            UtilDebug.printDebugConsole("Error init StreamController: " + e.getMessage());
+        }
     }
     
     public void disconnect(){
