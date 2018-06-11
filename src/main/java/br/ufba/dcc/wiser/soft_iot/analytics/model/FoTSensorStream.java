@@ -7,6 +7,7 @@ package br.ufba.dcc.wiser.soft_iot.analytics.model;
 
 
 
+import br.ufba.dcc.wiser.soft_iot.analytics.data.CusumStream;
 import br.ufba.dcc.wiser.soft_iot.analytics.util.UtilDebug;
 import br.ufba.dcc.wiser.soft_iot.tatu.TATUWrapper;
 import com.google.gson.JsonArray;
@@ -15,11 +16,29 @@ import com.google.gson.JsonObject;
 import com.google.gson.JsonParser;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
+import java.util.EnumMap;
 import java.util.List;
+import java.util.Set;
+import java.util.concurrent.TimeUnit;
 import org.apache.edgent.connectors.mqtt.MqttConfig;
 import org.apache.edgent.connectors.mqtt.MqttStreams;
+import org.apache.edgent.function.BiFunction;
+import org.apache.edgent.function.Consumer;
+import org.apache.edgent.function.Function;
+import org.apache.edgent.function.Predicate;
+import org.apache.edgent.function.ToIntFunction;
+import org.apache.edgent.function.UnaryOperator;
+import org.apache.edgent.oplet.core.FanIn;
+import org.apache.edgent.oplet.core.Pipe;
+import org.apache.edgent.oplet.core.Sink;
+import org.apache.edgent.topology.TSink;
 import org.apache.edgent.topology.TStream;
+import org.apache.edgent.topology.TWindow;
 import org.apache.edgent.topology.Topology;
+import org.eclipse.paho.client.mqttv3.MqttException;
+import org.eclipse.paho.client.mqttv3.MqttMessage;
+import org.eclipse.paho.client.mqttv3.MqttPersistenceException;
+import org.osgi.service.blueprint.container.ServiceUnavailableException;
 
 
 /**
@@ -37,6 +56,7 @@ public class FoTSensorStream {
     private String topicPrefix = "";
     private int qos;
     private FoTDeviceStream fotDeviceStream; 
+    private CusumStream cusumStream;
     
     public FoTSensorStream(Topology topology, MqttConfig mqttConfig, String Sensorid, FoTDeviceStream fotDeviceStream){
         this.topology = topology;
@@ -123,6 +143,31 @@ public class FoTSensorStream {
     public void setFotDeviceStream(FoTDeviceStream fotDeviceStream) {
         this.fotDeviceStream = fotDeviceStream;
     }
+    
+    public void sendTatuFlow(){
+        try{
+			
+		String flowRequest;
+		if(this.collectionTime <= 0){
+                    flowRequest = TATUWrapper.getTATUFlowValue(this.Sensorid, 3000, 3000);
+		}else{
+                    flowRequest = TATUWrapper.getTATUFlowValue(this.Sensorid, this.collectionTime, this.publishingTime);
+		}
+                
+		UtilDebug.printDebugConsole("[topic: " + this.fotDeviceStream.getDeviceId()  +"] " + flowRequest);
+		
+                String topic = TATUWrapper.topicBase + this.fotDeviceStream.getDeviceId();
+		
+                TStream<String> tStreamPublish =  new TStream<String>(); 
+                
+                                
+                this.connector.publish(stream, topic, this.qos, true);
+                
+        
+		}catch (ServiceUnavailableException e) {
+			e.printStackTrace();
+		}
+    }
 	
    private void initGetSensorData(){
        UtilDebug.printDebugConsole(TATUWrapper.topicBase + this.fotDeviceStream.getDeviceId() + "/#");
@@ -130,7 +175,7 @@ public class FoTSensorStream {
        
        //tStream.print();
        
-       TStream<List<SensorData>> tempObj = tStream.map(tuple -> {
+       TStream<List<SensorData>> tStreamSensorData = tStream.map(tuple -> {
                     List<SensorData> listData = new ArrayList<SensorData>();
                     
                     try{
@@ -161,7 +206,7 @@ public class FoTSensorStream {
                                 
                             }
                             
-                            System.out.println("--------------------------------------------------");
+                            //System.out.println("--------------------------------------------------");
                             for (SensorData sensorDatas : listData) {
                                 
                                 System.out.println("Device ==> " + sensorDatas.getDevice().getDeviceId());
@@ -170,11 +215,9 @@ public class FoTSensorStream {
                                 System.out.println("Time ==> " + sensorDatas.getLocalDateTime().toString());
                                 
                             }
-                            System.out.println("--------------------------------------------------");
+                            //System.out.println("--------------------------------------------------");
 
                         }
-                        
-                        
                         
                     }catch(Exception e){
                         System.out.println("Erro parser: " + e.getMessage());
@@ -182,8 +225,24 @@ public class FoTSensorStream {
                     return listData;
 		});
        
-          
+       //tempObj.print();
        
+       this.cusumStream = new CusumStream();
+              
+       tStreamSensorData.last(10, (t) -> {
+           
+           return null; 
+       });
+       
+       
+       tStreamSensorData.filter((list) -> {
+           for (SensorData sensorData : list) {
+                
+           }
+           
+           return false;
+       });
+      
    }
    
    public List<SensorData> parseTatuMessage(String message){
