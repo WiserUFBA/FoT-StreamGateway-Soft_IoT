@@ -7,6 +7,7 @@ package br.ufba.dcc.wiser.soft_iot.analytics.model;
 
 
 
+import br.ufba.dcc.wiser.soft_iot.analytics.data.CusumStream;
 import br.ufba.dcc.wiser.soft_iot.analytics.util.UtilDebug;
 import br.ufba.dcc.wiser.soft_iot.tatu.TATUWrapper;
 import com.google.gson.JsonArray;
@@ -37,6 +38,7 @@ public class FoTSensorStream {
     private String topicPrefix = "";
     private int qos;
     private FoTDeviceStream fotDeviceStream; 
+    private CusumStream cusumStream;
     
     public FoTSensorStream(Topology topology, MqttConfig mqttConfig, String Sensorid, FoTDeviceStream fotDeviceStream){
         this.topology = topology;
@@ -130,7 +132,7 @@ public class FoTSensorStream {
        
        //tStream.print();
        
-       TStream<List<SensorData>> tempObj = tStream.map(tuple -> {
+       TStream<List<SensorData>> tStreamSensorData = tStream.map(tuple -> {
                     List<SensorData> listData = new ArrayList<SensorData>();
                     
                     try{
@@ -174,8 +176,6 @@ public class FoTSensorStream {
 
                         }
                         
-                        
-                        
                     }catch(Exception e){
                         System.out.println("Erro parser: " + e.getMessage());
                     }        
@@ -183,18 +183,22 @@ public class FoTSensorStream {
 		});
        
        //tempObj.print();
-       
-       /*
-       TStream<List<SensorData>> tStreamData = tStream.map((tuple) -> {
-                                                
-                                                List<SensorData> listSensorData = parseTatuMessage(tuple);
-                                                return listSensorData; 
-                                            });
-       
+       this.cusumStream = new CusumStream();
+              
+       tStreamSensorData.last(10, (t) -> {
+           
+           return null; 
+       });
        
        
-       tStream.print();
-       */
+       tStreamSensorData.filter((list) -> {
+           for (SensorData sensorData : list) {
+               
+           }
+           
+           return false;
+       });
+      
    }
    
    public List<SensorData> parseTatuMessage(String message){
