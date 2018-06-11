@@ -182,19 +182,8 @@ public class FoTSensorStream {
                     return listData;
 		});
        
-       //tempObj.print();
+          
        
-       /*
-       TStream<List<SensorData>> tStreamData = tStream.map((tuple) -> {
-                                                
-                                                List<SensorData> listSensorData = parseTatuMessage(tuple);
-                                                return listSensorData; 
-                                            });
-       
-       
-       
-       tStream.print();
-       */
    }
    
    public List<SensorData> parseTatuMessage(String message){
