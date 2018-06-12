@@ -16,28 +16,11 @@ import com.google.gson.JsonObject;
 import com.google.gson.JsonParser;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
-import java.util.EnumMap;
 import java.util.List;
-import java.util.Set;
-import java.util.concurrent.TimeUnit;
 import org.apache.edgent.connectors.mqtt.MqttConfig;
 import org.apache.edgent.connectors.mqtt.MqttStreams;
-import org.apache.edgent.function.BiFunction;
-import org.apache.edgent.function.Consumer;
-import org.apache.edgent.function.Function;
-import org.apache.edgent.function.Predicate;
-import org.apache.edgent.function.ToIntFunction;
-import org.apache.edgent.function.UnaryOperator;
-import org.apache.edgent.oplet.core.FanIn;
-import org.apache.edgent.oplet.core.Pipe;
-import org.apache.edgent.oplet.core.Sink;
-import org.apache.edgent.topology.TSink;
 import org.apache.edgent.topology.TStream;
-import org.apache.edgent.topology.TWindow;
 import org.apache.edgent.topology.Topology;
-import org.eclipse.paho.client.mqttv3.MqttException;
-import org.eclipse.paho.client.mqttv3.MqttMessage;
-import org.eclipse.paho.client.mqttv3.MqttPersistenceException;
 import org.osgi.service.blueprint.container.ServiceUnavailableException;
 
 
@@ -68,7 +51,9 @@ public class FoTSensorStream {
         if(this.connector == null)
             throw new ExceptionInInitializerError("Error starting sensor");
         this.qos = 0;
+        sendTatuFlow();
         initGetSensorData();
+        
     }   
     
     
@@ -158,15 +143,17 @@ public class FoTSensorStream {
 		
                 String topic = TATUWrapper.topicBase + this.fotDeviceStream.getDeviceId();
 		
-                TStream<String> tStreamPublish =  new TStream<String>(); 
+                
+                TStream<String> cmdOutput = this.topology.strings(flowRequest);;
+                cmdOutput.print();
                 
                                 
-                this.connector.publish(stream, topic, this.qos, true);
+                this.connector.publish(cmdOutput, topic, this.qos, true);
                 
         
-		}catch (ServiceUnavailableException e) {
-			e.printStackTrace();
-		}
+	}catch (ServiceUnavailableException e) {
+		e.printStackTrace();
+	}
     }
 	
    private void initGetSensorData(){

@@ -113,6 +113,8 @@ public class StreamControllerImpl {
                         fotSensorStream.setPublishingTime(fotSensor.get("publishing_time").getAsInt());
                         
                         UtilDebug.printDebugConsole(fotSensorStream.getSensorid());
+                        UtilDebug.printDebugConsole(String.valueOf(fotSensorStream.getCollectionTime()));
+                        UtilDebug.printDebugConsole(String.valueOf(fotSensorStream.getPublishingTime()));
                                 
                         listFoTSensorStream.add(fotSensorStream);
                     }   
