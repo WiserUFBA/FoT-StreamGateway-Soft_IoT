@@ -41,6 +41,14 @@ public class FoTSensorStream {
     private FoTDeviceStream fotDeviceStream; 
     private CusumStream cusumStream;
     
+    /**
+     *  Armengue, melhorar
+     *
+     */
+    private double dataMax;
+    private double dataMin;
+    
+    
     public FoTSensorStream(Topology topology, MqttConfig mqttConfig, String Sensorid, FoTDeviceStream fotDeviceStream){
         this.topology = topology;
         this.Sensorid = Sensorid;
@@ -51,7 +59,7 @@ public class FoTSensorStream {
         if(this.connector == null)
             throw new ExceptionInInitializerError("Error starting sensor");
         this.qos = 0;
-        sendTatuFlow();
+        //sendTatuFlow();
         initGetSensorData();
         
     }   
@@ -222,14 +230,16 @@ public class FoTSensorStream {
        });
        
        
-       tStreamSensorData.filter((list) -> {
+       TStream<List<SensorData>> tStreamFilter = tStreamSensorData.filter((list) -> {
            for (SensorData sensorData : list) {
-                
+                if(Double.valueOf(sensorData.getValue()) >= this.dataMax || Double.valueOf(sensorData.getValue()) <= this.dataMin)
+                    return true;
            }
-           
            return false;
        });
       
+       
+       
    }
    
    public List<SensorData> parseTatuMessage(String message){

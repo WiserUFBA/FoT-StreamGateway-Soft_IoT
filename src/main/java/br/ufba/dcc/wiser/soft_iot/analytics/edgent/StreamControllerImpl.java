@@ -112,6 +112,8 @@ public class StreamControllerImpl {
                         fotSensorStream.setCollectionTime(fotSensor.get("collection_time").getAsInt());
                         fotSensorStream.setPublishingTime(fotSensor.get("publishing_time").getAsInt());
                         
+                        fotSensorStream.sendTatuFlow();
+                        
                         UtilDebug.printDebugConsole(fotSensorStream.getSensorid());
                         UtilDebug.printDebugConsole(String.valueOf(fotSensorStream.getCollectionTime()));
                         UtilDebug.printDebugConsole(String.valueOf(fotSensorStream.getPublishingTime()));
