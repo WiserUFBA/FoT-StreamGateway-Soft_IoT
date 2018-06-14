@@ -45,8 +45,8 @@ public class FoTSensorStream {
      *  Armengue, melhorar
      *
      */
-    private double dataMax;
-    private double dataMin;
+    private double dataMax = 25;
+    private double dataMin = 17;
     
     
     public FoTSensorStream(Topology topology, MqttConfig mqttConfig, String Sensorid, FoTDeviceStream fotDeviceStream){
@@ -141,7 +141,7 @@ public class FoTSensorStream {
         try{
 			
 		String flowRequest;
-		if(this.collectionTime <= 0){
+		if(this.collectionTime >= 0){
                     flowRequest = TATUWrapper.getTATUFlowValue(this.Sensorid, 3000, 3000);
 		}else{
                     flowRequest = TATUWrapper.getTATUFlowValue(this.Sensorid, this.collectionTime, this.publishingTime);
@@ -193,7 +193,6 @@ public class FoTSensorStream {
                                 for (int i = 0; i < jsonArray.size(); i++) {
                                     JsonElement jsonElement = jsonArray.get(i);
                                     String value = String.valueOf(jsonElement.getAsDouble());
-                                    System.out.println(LocalDateTime.now().toString());
                                     sensorData = new SensorData(value, LocalDateTime.now(), this, fotDeviceStream);  
                                     if(sensorData != null) 
                                         listData.add(sensorData);
@@ -201,45 +200,71 @@ public class FoTSensorStream {
                                 
                             }
                             
-                            //System.out.println("--------------------------------------------------");
-                            for (SensorData sensorDatas : listData) {
-                                
-                                System.out.println("Device ==> " + sensorDatas.getDevice().getDeviceId());
-                                System.out.println("Sensor ==> " + sensorDatas.getSensor().getSensorid());
-                                System.out.println("Data ==> " + sensorDatas.getValue());
-                                System.out.println("Time ==> " + sensorDatas.getLocalDateTime().toString());
-                                
-                            }
-                            //System.out.println("--------------------------------------------------");
-
+                           
                         }
                         
                     }catch(Exception e){
                         System.out.println("Erro parser: " + e.getMessage());
-                    }        
+                    }
+                    
                     return listData;
 		});
        
-       //tempObj.print();
+       /*
+        Implementar Wavelet
        
-       this.cusumStream = new CusumStream();
-              
+       */
+       
+       /*
+       this.cusumStream = new CusumStream();       
+       
        tStreamSensorData.last(10, (t) -> {
            
            return null; 
        });
+       */
        
-       
-       TStream<List<SensorData>> tStreamFilter = tStreamSensorData.filter((list) -> {
+      tStreamSensorData = tStreamSensorData.filter((list) -> {
            for (SensorData sensorData : list) {
-                if(Double.valueOf(sensorData.getValue()) >= this.dataMax || Double.valueOf(sensorData.getValue()) <= this.dataMin)
-                    return true;
+               
+               if(Double.valueOf(sensorData.getValue()) >= this.dataMax || Double.valueOf(sensorData.getValue()) <= this.dataMin)
+                   return true;
            }
-           return false;
+           
+           return false; 
        });
       
        
+       TStream<String> tStreamOutputStream = tStreamSensorData.map((list) -> {
+           
+           String output = "No data";
+           
+           for (SensorData sensorData : list) {    
+               if(Double.valueOf(sensorData.getValue()) >= this.dataMax || Double.valueOf(sensorData.getValue()) <= this.dataMin){
+                output = "Alarm Sensor: " + true + " Sensor: " + this.Sensorid + " value: " + sensorData.getValue();
+               }
+           }
+           
+           return output;
+       });
+      
+       tStreamOutputStream.print();
+   }
+   
+   public void printSensorData(List<SensorData> listData){
        
+       System.out.println("--------------------------------------------------");
+       for (SensorData sensorDatas : listData) {
+                             
+            System.out.println("Device ==> " + sensorDatas.getDevice().getDeviceId());
+            System.out.println("Sensor ==> " + sensorDatas.getSensor().getSensorid());
+            System.out.println("Data ==> " + sensorDatas.getValue());
+            System.out.println("Time ==> " + sensorDatas.getLocalDateTime().toString());
+                                
+       }
+       System.out.println("--------------------------------------------------");
+       
+                            
    }
    
    public List<SensorData> parseTatuMessage(String message){

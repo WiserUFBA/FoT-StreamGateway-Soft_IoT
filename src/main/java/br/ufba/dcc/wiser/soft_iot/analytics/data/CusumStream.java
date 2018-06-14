@@ -17,6 +17,7 @@ public class CusumStream<T> {
     
     
     public void newData(T data){
+        /*
         ++observationCount;
 
         // Instead of providing the target mean as a parameter as 
@@ -38,7 +39,7 @@ public class CusumStream<T> {
         }
 
         cusumPrev = cusum;
-        
+        */
     }
     
     

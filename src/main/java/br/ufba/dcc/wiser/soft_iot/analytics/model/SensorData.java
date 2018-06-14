@@ -26,6 +26,13 @@ public class SensorData {
         this.device = device;
     }
     
+    
+    public SensorData(String value, FoTSensorStream sensor, FoTDeviceStream device){
+        this.value = value;
+        this.sensor = sensor;
+        this.device = device;
+    }
+    
     public String getValue() {
         return value;
     }
