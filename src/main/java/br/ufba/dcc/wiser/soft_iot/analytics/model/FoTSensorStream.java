@@ -215,14 +215,11 @@ public class FoTSensorStream {
        
        */
        
-       /*
+       
        this.cusumStream = new CusumStream();       
        
-       tStreamSensorData.last(10, (t) -> {
-           
-           return null; 
-       });
-       */
+       //tStreamSensorData.last(qos, fnctn)
+       
        
       tStreamSensorData = tStreamSensorData.filter((list) -> {
            for (SensorData sensorData : list) {
