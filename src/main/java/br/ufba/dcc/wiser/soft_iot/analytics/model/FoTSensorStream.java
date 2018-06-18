@@ -22,7 +22,8 @@ import org.apache.edgent.connectors.mqtt.MqttStreams;
 import org.apache.edgent.topology.TStream;
 import org.apache.edgent.topology.Topology;
 import org.osgi.service.blueprint.container.ServiceUnavailableException;
-
+import org.apache.edgent.function.Functions;
+import org.apache.edgent.topology.TWindow;
 
 /**
  *
@@ -211,18 +212,39 @@ public class FoTSensorStream {
 		});
        
        /*
-        Implementar Wavelet
-       
+       * Implementar Wavelet
        */
        
        
-       this.cusumStream = new CusumStream(0.05, 3);       
+       this.cusumStream = new CusumStream(0.05, 1);       
+            
+       TWindow<List<SensorData>, Integer> window = tStreamSensorData.last(10, Functions.unpartitioned());
+             
        
-       tStreamSensorData.last(10, (tuple) -> {
-           
-           return null; 
-       });
-        
+       TStream<List<Double>> readings = window.aggregate((List, integer) -> {
+            
+            for (List<SensorData> listData : List) {    
+               for (SensorData sensorData : listData) {
+                   this.cusumStream.newData(Double.valueOf(sensorData.getValue()));
+               }
+            }
+            
+           List<Double> output = null; 
+           if(this.cusumStream.isChange()){
+               output = this.cusumStream.getListData();
+               this.cusumStream.reset();
+           }
+           if(output != null){
+                for (Double double1 : output) {
+                    System.out.println(double1);
+                }
+           }else{
+               System.out.println("output null");
+           } 
+           return output; 
+      });
+       
+      readings.print();
        
       tStreamSensorData = tStreamSensorData.filter((list) -> {
            for (SensorData sensorData : list) {
@@ -248,7 +270,7 @@ public class FoTSensorStream {
            return output;
        });
       
-       tStreamOutputStream.print();
+       //tStreamOutputStream.print();
    }
    
    public void printSensorData(List<SensorData> listData){

@@ -5,6 +5,9 @@
  */
 package br.ufba.dcc.wiser.soft_iot.analytics.data;
 
+import java.util.LinkedList;
+import java.util.List;
+
 /**
  *
  * @author brenno
@@ -32,14 +35,30 @@ public class CusumStream {
     
     private long qtData = 0;
     
+    private List<Double> listData;
+    
+    
     public CusumStream(double magnitude, double threshold){
         this.magnitudeMultiplier = magnitude;
         this.thresholdMultiplier = threshold;      
+        this.listData = new LinkedList<>();
+    }
+
+    public List<Double> getListData() {
+        return listData;
+    }
+
+    public void setListData(List<Double> listData) {
+        this.listData = listData;
     }
     
     
     
     public void newData(Double data){
+        if(isChange()){
+          System.out.println("Dados add: " + data);
+          this.listData.add(data);
+        } 
         
         ++qtData;
 
@@ -57,9 +76,10 @@ public class CusumStream {
 
         cusum = Math.max(0, cusumPrev +(data - runningMean - magnitude));
 
-       
-        this.change = cusum > threshold;
-       
+        if(!isChange()){
+           this.change = cusum > threshold;
+           System.out.println("Mudança: " + this.change);
+        }
 
         cusumPrev = cusum;
         
@@ -75,6 +95,8 @@ public class CusumStream {
         this.cusumPrev = 0;
         this.runningMean = 0;
         this.qtData = 0;
+        this.listData.clear();
+        this.change = false;
     }
 
     
