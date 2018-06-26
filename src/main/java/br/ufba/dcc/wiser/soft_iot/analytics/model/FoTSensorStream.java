@@ -216,7 +216,7 @@ public class FoTSensorStream {
        */
        
        
-       this.cusumStream = new CusumStream(0.05, 1);       
+       this.cusumStream = new CusumStream(0.05, 0.5);       
             
        TWindow<List<SensorData>, Integer> window = tStreamSensorData.last(10, Functions.unpartitioned());
              

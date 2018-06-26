@@ -55,6 +55,20 @@ public class CusumStream {
     
     
     public void newData(Double data){
+        System.out.println("-----------------------------");
+        System.out.println("Dados de entrada: " + data);
+        System.out.println("Mudança: " + this.change);
+        System.out.println("Threshold: " + this.threshold);
+        System.out.println("CUSUM: " + this.cusum);
+        System.out.println("CUSUM PREV: " + this.cusumPrev);
+        System.out.println("runningMean: " + this.runningMean);
+        System.out.println("runningVariance: " + this.runningVariance);
+        System.out.println("qtData: " + this.qtData);
+        System.out.println("magnitudeMultiplier: " + this.magnitudeMultiplier);
+        System.out.println("thresholdMultiplier: " + this.thresholdMultiplier);
+        System.out.println("------------------------------");
+        
+        
         if(isChange()){
           System.out.println("Dados add: " + data);
           this.listData.add(data);
@@ -77,8 +91,9 @@ public class CusumStream {
         cusum = Math.max(0, cusumPrev +(data - runningMean - magnitude));
 
         if(!isChange()){
+           System.out.println("Mudanças: " + this.change);        
            this.change = cusum > threshold;
-           System.out.println("Mudança: " + this.change);
+           
         }
 
         cusumPrev = cusum;
