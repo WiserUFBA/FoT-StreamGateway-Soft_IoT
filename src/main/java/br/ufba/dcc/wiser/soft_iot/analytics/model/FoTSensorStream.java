@@ -47,6 +47,9 @@ public class FoTSensorStream {
     private int qos;
     private FoTDeviceStream fotDeviceStream; 
     private CusumStream cusumStream;
+    private Path path = Paths.get("/home/brennomello/Documentos/Log-karaf/output.txt");
+    private BufferedWriter writer;
+    
     
     /**
      *  Armengue, melhorar
@@ -66,6 +69,13 @@ public class FoTSensorStream {
         if(this.connector == null)
             throw new ExceptionInInitializerError("Error starting sensor");
         this.qos = 0;
+        
+        try{
+            writer = Files.newBufferedWriter(path);
+        }catch(IOException e){
+          System.out.println(e.getMessage());
+        }  
+          
         //sendTatuFlow();
         initGetSensorData();
         
@@ -225,15 +235,11 @@ public class FoTSensorStream {
        TWindow<List<SensorData>, Integer> windowSeconds = tStreamSensorData.last(60, TimeUnit.SECONDS, Functions.unpartitioned());
        TStream<Integer> readings = windowSeconds.aggregate((List, integer) -> {
              
-        Path path = Paths.get("/home/brennomello/Documentos/Log-karaf/output.txt");
-        BufferedWriter writer;
+       
         int qtdMenssage = 0; 
         //Use try-with-resource to get auto-closeable writer instance
         try{
-           writer = Files.newBufferedWriter(path);
-        
-           
-            
+             
             for (List<SensorData> listData : List) {    
                for (SensorData sensorData : listData) {
                    System.out.println("Data " + this.Sensorid + ": " + sensorData.getValue());
@@ -245,7 +251,7 @@ public class FoTSensorStream {
             }
             System.out.println("Quantidade de dados " + this.Sensorid +": " + qtdMenssage);
             writer.append("Quantidade de dados " + this.Sensorid +": " + qtdMenssage + "\n");
-            writer.close();
+            //writer.close();
        }catch(IOException e){
           System.out.println(e.getMessage());
         }  
