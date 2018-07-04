@@ -17,13 +17,16 @@ public class SensorData {
     private FoTDeviceStream device;
     private FoTSensorStream sensor;
     private LocalDateTime localDateTime;
+    private long delay;
 
+    
     public SensorData(String value, LocalDateTime localDateTime, 
-            FoTSensorStream sensor, FoTDeviceStream device){
+            FoTSensorStream sensor, FoTDeviceStream device, long delay){
         this.value = value;
         this.localDateTime = localDateTime;
         this.sensor = sensor;
         this.device = device;
+        this.delay = delay;
     }
     
     
@@ -32,6 +35,16 @@ public class SensorData {
         this.sensor = sensor;
         this.device = device;
     }
+    
+    
+    public long getDelay() {
+        return delay;
+    }
+
+    public void setDelay(long delay) {
+        this.delay = delay;
+    }
+    
     
     public String getValue() {
         return value;

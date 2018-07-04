@@ -14,6 +14,11 @@ import com.google.gson.JsonArray;
 import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
 import com.google.gson.JsonParser;
+import java.io.BufferedWriter;
+import java.io.IOException;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
@@ -144,7 +149,7 @@ public class FoTSensorStream {
 			
 		String flowRequest;
 		if(this.collectionTime >= 0){
-                    flowRequest = TATUWrapper.getTATUFlowValue(this.Sensorid, 3000, 3000);
+                    flowRequest = TATUWrapper.getTATUFlowValue(this.Sensorid, 2000, 2000);
 		}else{
                     flowRequest = TATUWrapper.getTATUFlowValue(this.Sensorid, this.collectionTime, this.publishingTime);
 		}
@@ -190,7 +195,7 @@ public class FoTSensorStream {
                             
                             JsonElement elementTimeStamp = body.get("TimeStamp");
                             long delay = System.currentTimeMillis()-elementTimeStamp.getAsLong();
-                            System.out.println("Delay Message " + this.Sensorid + ": " + delay);
+                            //System.out.println("Delay Message " + this.Sensorid + ": " + delay);
                             
                             JsonArray jsonArray = body.getAsJsonArray(this.Sensorid);
 
@@ -199,7 +204,7 @@ public class FoTSensorStream {
                                 for (int i = 0; i < jsonArray.size(); i++) {
                                     JsonElement jsonElement = jsonArray.get(i);
                                     String value = String.valueOf(jsonElement.getAsDouble());
-                                    sensorData = new SensorData(value, LocalDateTime.now(), this, fotDeviceStream);  
+                                    sensorData = new SensorData(value, LocalDateTime.now(), this, fotDeviceStream, delay);  
                                     if(sensorData != null) 
                                         listData.add(sensorData);
                                 }
@@ -215,23 +220,40 @@ public class FoTSensorStream {
                     
                     return listData;
 		});
+      
        
-       
-       TWindow<List<SensorData>, Integer> windowSeconds = tStreamSensorData.last(1, TimeUnit.SECONDS.SECONDS, Functions.unpartitioned());
+       TWindow<List<SensorData>, Integer> windowSeconds = tStreamSensorData.last(60, TimeUnit.SECONDS, Functions.unpartitioned());
        TStream<Integer> readings = windowSeconds.aggregate((List, integer) -> {
-            int qtdMenssage = 0; 
+             
+        Path path = Paths.get("/home/brennomello/Documentos/Log-karaf/output.txt");
+        BufferedWriter writer;
+        int qtdMenssage = 0; 
+        //Use try-with-resource to get auto-closeable writer instance
+        try{
+           writer = Files.newBufferedWriter(path);
+        
+           
+            
             for (List<SensorData> listData : List) {    
                for (SensorData sensorData : listData) {
                    System.out.println("Data " + this.Sensorid + ": " + sensorData.getValue());
+                   System.out.println("Delay " + this.Sensorid + ": " + sensorData.getDelay());
                    qtdMenssage++;
-                   
+                   writer.append("Data " + this.Sensorid + ": " + sensorData.getValue() + "\n");
+                   writer.append("Delay " + this.Sensorid + ": " + sensorData.getDelay() + "\n");
                }
             }
             System.out.println("Quantidade de dados " + this.Sensorid +": " + qtdMenssage);
+            writer.append("Quantidade de dados " + this.Sensorid +": " + qtdMenssage + "\n");
+            writer.close();
+       }catch(IOException e){
+          System.out.println(e.getMessage());
+        }  
+            
             return qtdMenssage;
        });
        
-       readings.print();
+       //readings.print();
        /*
        * Implementar Wavelet
        */
