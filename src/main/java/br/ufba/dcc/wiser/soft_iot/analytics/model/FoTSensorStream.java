@@ -17,6 +17,7 @@ import com.google.gson.JsonParser;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.concurrent.TimeUnit;
 import org.apache.edgent.connectors.mqtt.MqttConfig;
 import org.apache.edgent.connectors.mqtt.MqttStreams;
 import org.apache.edgent.topology.TStream;
@@ -186,7 +187,11 @@ public class FoTSensorStream {
 
 
                             JsonObject body = jObject.getAsJsonObject("BODY");
-
+                            
+                            JsonElement elementTimeStamp = body.get("TimeStamp");
+                            long delay = System.currentTimeMillis()-elementTimeStamp.getAsLong();
+                            System.out.println("Delay Message " + this.Sensorid + ": " + delay);
+                            
                             JsonArray jsonArray = body.getAsJsonArray(this.Sensorid);
 
                             if(jsonArray != null){
@@ -211,11 +216,27 @@ public class FoTSensorStream {
                     return listData;
 		});
        
+       
+       TWindow<List<SensorData>, Integer> windowSeconds = tStreamSensorData.last(1, TimeUnit.SECONDS.SECONDS, Functions.unpartitioned());
+       TStream<Integer> readings = windowSeconds.aggregate((List, integer) -> {
+            int qtdMenssage = 0; 
+            for (List<SensorData> listData : List) {    
+               for (SensorData sensorData : listData) {
+                   System.out.println("Data " + this.Sensorid + ": " + sensorData.getValue());
+                   qtdMenssage++;
+                   
+               }
+            }
+            System.out.println("Quantidade de dados " + this.Sensorid +": " + qtdMenssage);
+            return qtdMenssage;
+       });
+       
+       readings.print();
        /*
        * Implementar Wavelet
        */
        
-       
+       /*
        this.cusumStream = new CusumStream(0.05, 0.5);       
             
        TWindow<List<SensorData>, Integer> window = tStreamSensorData.last(10, Functions.unpartitioned());
@@ -245,7 +266,8 @@ public class FoTSensorStream {
       });
        
       readings.print();
-       
+      */
+
       tStreamSensorData = tStreamSensorData.filter((list) -> {
            for (SensorData sensorData : list) {
                
