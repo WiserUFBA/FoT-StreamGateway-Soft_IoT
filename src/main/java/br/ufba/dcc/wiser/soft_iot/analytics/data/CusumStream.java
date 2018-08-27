@@ -118,6 +118,9 @@ public class CusumStream {
      
      
      public void reset() {
+        System.out.println("-----------------------------");
+        System.out.println("Reset");
+        System.out.println("-----------------------------");
         this.cusum = 0;
         this.cusumPrev = 0;
         this.runningMean = 0;
