@@ -169,7 +169,7 @@ public class FoTSensorStream {
                 String topic = TATUWrapper.topicBase + this.fotDeviceStream.getDeviceId();
 		
                 
-                TStream<String> cmdOutput = this.topology.strings(flowRequest);;
+                TStream<String> cmdOutput = this.topology.strings(flowRequest); 
                 cmdOutput.print();
                 
                                 
