@@ -31,6 +31,20 @@
     <dependencies>
         
         <dependency>
+            <groupId>org.apache.ant</groupId>
+            <artifactId>ant</artifactId>
+            <version>1.10.5</version>
+            <scope>compile</scope>
+        </dependency>
+      
+        <dependency>
+            <groupId>nz.ac.waikato.cms.moa</groupId>
+            <artifactId>moa</artifactId>
+            <version>2014.04</version>
+            <scope>compile</scope>
+        </dependency>
+        
+        <dependency>
 	   <groupId>br.ufba.dcc.wiser.soft_iot</groupId>
 	   <artifactId>fot-gateway-mapping-devices</artifactId>
 	   <version>1.0.1</version>

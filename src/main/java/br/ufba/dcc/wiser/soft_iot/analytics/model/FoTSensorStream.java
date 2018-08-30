@@ -22,7 +22,8 @@ import java.nio.file.Paths;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.concurrent.TimeUnit;
+import moa.classifiers.core.driftdetection.ChangeDetector;
+import moa.classifiers.core.driftdetection.CusumDM;
 import org.apache.edgent.connectors.mqtt.MqttConfig;
 import org.apache.edgent.connectors.mqtt.MqttStreams;
 import org.apache.edgent.topology.TStream;
@@ -47,6 +48,7 @@ public class FoTSensorStream {
     private int qos;
     private FoTDeviceStream fotDeviceStream; 
     private CusumStream cusumStream;
+    private ChangeDetector changeDetector;
     private Path path = Paths.get("/home/brennomello/Documentos/Log-karaf/output.txt");
     private BufferedWriter writer;
     
@@ -73,12 +75,13 @@ public class FoTSensorStream {
         try{
             writer = Files.newBufferedWriter(path);
         }catch(IOException e){
-          System.out.println(e.getMessage());
+            System.out.println(e.getMessage());
         }  
           
         //sendTatuFlow();
-        initGetSensorData();
-        
+        //initGetSensorData();
+        cusumConceptDriftStream();
+        //init();
     }   
     
     
@@ -180,13 +183,74 @@ public class FoTSensorStream {
 		e.printStackTrace();
 	}
     }
-	
-   private void initGetSensorData(){
+    
+   
+    
+   private TStream<String> initGetSensorData(){    
+       UtilDebug.printDebugConsole(TATUWrapper.topicBase + this.fotDeviceStream.getDeviceId() + "/#");
+       TStream<String> tStream = this.connector.subscribe(TATUWrapper.topicBase + this.fotDeviceStream.getDeviceId() + "/#", this.qos);
+       tStream.print();
+              
+       return tStream;
+   }
+   
+   private TStream<List<SensorData>> paserTatuStream(TStream<String> tStream){
+       
+       TStream<List<SensorData>> tStreamSensorData = tStream.map(tuple -> {
+                    List<SensorData> listData = new ArrayList<SensorData>();
+                    
+                    try{
+                        
+                        if(TATUWrapper.isValidTATUAnswer(tuple)){
+                                
+                                
+                            JsonParser parser = new JsonParser();
+
+                            JsonElement element = parser.parse(tuple);
+                            JsonObject jObject = element.getAsJsonObject();
+
+
+                            JsonObject body = jObject.getAsJsonObject("BODY");
+                            
+                            JsonElement elementTimeStamp = body.get("TimeStamp");
+                            long delay = System.currentTimeMillis()-elementTimeStamp.getAsLong();
+                            System.out.println("Delay Message " + this.Sensorid + ": " + delay);
+                            
+                            JsonArray jsonArray = body.getAsJsonArray(this.Sensorid);
+
+                            if(jsonArray != null){
+                                SensorData sensorData = null;
+                                for (int i = 0; i < jsonArray.size(); i++) {
+                                    JsonElement jsonElement = jsonArray.get(i);
+                                    String value = String.valueOf(jsonElement.getAsDouble());
+                                    sensorData = new SensorData(value, LocalDateTime.now(), this, fotDeviceStream, delay);  
+                                    if(sensorData != null) 
+                                        listData.add(sensorData);
+                                }
+                                
+                            }
+                            
+                           
+                        }
+                        
+                    }catch(Exception e){
+                        System.out.println("Erro parser: " + e.getMessage());
+                    }
+                    
+                    return listData;
+		});
+      
+       return tStreamSensorData;
+   }
+   
+ 
+   private void init(){
        UtilDebug.printDebugConsole(TATUWrapper.topicBase + this.fotDeviceStream.getDeviceId() + "/#");
        TStream<String> tStream = this.connector.subscribe(TATUWrapper.topicBase + this.fotDeviceStream.getDeviceId() + "/#", this.qos);
        
-       //tStream.print();
+       tStream.print();
        
+       /*
        TStream<List<SensorData>> tStreamSensorData = tStream.map(tuple -> {
                     List<SensorData> listData = new ArrayList<SensorData>();
                     
@@ -231,7 +295,9 @@ public class FoTSensorStream {
                     return listData;
 		});
       
+       */
        
+       /*
        TWindow<List<SensorData>, Integer> windowSeconds = tStreamSensorData.last(60, TimeUnit.SECONDS, Functions.unpartitioned());
        TStream<Integer> readings = windowSeconds.aggregate((List, integer) -> {
              
@@ -259,7 +325,11 @@ public class FoTSensorStream {
             return qtdMenssage;
        });
        
-       //readings.print();
+       readings.print();
+       
+       */
+       
+       
        /*
        * Implementar Wavelet
        */
@@ -269,7 +339,6 @@ public class FoTSensorStream {
             
        TWindow<List<SensorData>, Integer> window = tStreamSensorData.last(10, Functions.unpartitioned());
              
-       
        TStream<List<Double>> readings = window.aggregate((List, integer) -> {
             
             for (List<SensorData> listData : List) {    
@@ -288,13 +357,13 @@ public class FoTSensorStream {
                     System.out.println(double1);
                 }
            }else{
-               System.out.println("output null");
+                    System.out.println("output null");
            } 
            return output; 
       });
        
       readings.print();
-      */
+      
 
       tStreamSensorData = tStreamSensorData.filter((list) -> {
            for (SensorData sensorData : list) {
@@ -319,8 +388,114 @@ public class FoTSensorStream {
            
            return output;
        });
-      
+        
+       */
        //tStreamOutputStream.print();
+   }
+   
+   public void cusumConceptDriftStream(){
+       TStream<String> tStream = this.connector.subscribe(TATUWrapper.topicBase + this.fotDeviceStream.getDeviceId() + "/#", this.qos);
+       tStream.print();
+       
+       
+       TStream<List<SensorData>> tStreamSensorData = tStream.map(tuple -> {
+                    List<SensorData> listData = new ArrayList<SensorData>();
+                    
+                    try{
+                        
+                        if(TATUWrapper.isValidTATUAnswer(tuple)){
+                                
+                                
+                            JsonParser parser = new JsonParser();
+
+                            JsonElement element = parser.parse(tuple);
+                            JsonObject jObject = element.getAsJsonObject();
+
+
+                            JsonObject body = jObject.getAsJsonObject("BODY");
+                            
+                            JsonElement elementTimeStamp = body.get("TimeStamp");
+                            long delay = System.currentTimeMillis()-elementTimeStamp.getAsLong();
+                            System.out.println("Delay Message " + this.Sensorid + ": " + delay);
+                            
+                            JsonArray jsonArray = body.getAsJsonArray(this.Sensorid);
+
+                            if(jsonArray != null){
+                                SensorData sensorData = null;
+                                for (int i = 0; i < jsonArray.size(); i++) {
+                                    JsonElement jsonElement = jsonArray.get(i);
+                                    String value = String.valueOf(jsonElement.getAsDouble());
+                                    sensorData = new SensorData(value, LocalDateTime.now(), this, fotDeviceStream, delay);  
+                                    if(sensorData != null) 
+                                        listData.add(sensorData);
+                                }
+                                
+                            }
+                            
+                           
+                        }
+                        
+                    }catch(Exception e){
+                        System.out.println("Erro parser: " + e.getMessage());
+                    }
+                    
+                    return listData;
+		});
+      
+       
+       TWindow<List<SensorData>, Integer> window = tStreamSensorData.last(50, Functions.unpartitioned());
+       
+       this.changeDetector = new CusumDM();
+       
+       TStream<List<Double>> readings = window.batch((List, integer) -> {
+           List<Double> output = new ArrayList<>();  
+           try{
+                boolean change = false;     
+
+                for (List<SensorData> listData : List) {    
+                  for (SensorData sensorData : listData) {
+                     double value = Double.valueOf(sensorData.getValue());
+                     System.out.println(value);
+                     this.changeDetector.input(value);
+                     output.add(value);
+                     if(this.changeDetector.getChange()){
+                         change = true;
+                     }
+                  }
+                }
+
+                if(change){
+                    System.out.println("Concept Drift detectado");
+                }else{
+                    System.out.println("Concept Drift não detectado");   
+                } 
+                
+            }catch(Exception e){
+                System.out.print(e.getMessage());
+            }
+            return output;
+           
+      });
+       
+      readings.print();
+      
+   }
+   
+   public void verifyValue(TStream<List<SensorData>> tStreamSensorData){
+       
+       TStream<String> tStreamOutputStream = tStreamSensorData.map((list) -> {
+           
+           String output = "No data";
+           
+           for (SensorData sensorData : list) {    
+               if(Double.valueOf(sensorData.getValue()) >= this.dataMax || Double.valueOf(sensorData.getValue()) <= this.dataMin){
+                output = "Alarm Sensor: " + true + " Sensor: " + this.Sensorid + " value: " + sensorData.getValue();
+               }
+           }
+           
+           return output;
+       });
+       
    }
    
    public void printSensorData(List<SensorData> listData){
@@ -337,11 +512,6 @@ public class FoTSensorStream {
        System.out.println("--------------------------------------------------");
        
                             
-   }
-   
-   public List<SensorData> parseTatuMessage(String message){
-    
-       return null;  
    }
    
    public String getDeviceTopic(){
