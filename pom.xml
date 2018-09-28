@@ -26,7 +26,21 @@
         <retrolambda.version>2.5.1</retrolambda.version>
         <maven.compiler.source>1.8</maven.compiler.source>
         <maven.compiler.target>1.8</maven.compiler.target>
+        
+        
     </properties>
+    
+    <repositories>
+        <repository>
+            <id>wiser-snapshots</id>
+            <url>https://github.com/WiserUFBA/wiser-mvn-repo/raw/master/snapshots</url>
+        </repository>
+        
+        <repository>
+            <id>wiser-releases</id>
+            <url>https://github.com/WiserUFBA/wiser-mvn-repo/raw/master/releases</url>
+        </repository>
+    </repositories>
 
     <dependencies>
         
