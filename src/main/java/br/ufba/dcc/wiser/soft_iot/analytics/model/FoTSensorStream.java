@@ -48,7 +48,7 @@ public class FoTSensorStream {
     private int qos;
     private FoTDeviceStream fotDeviceStream; 
     private CusumStream cusumStream;
-    private ChangeDetector changeDetector;
+    //private ChangeDetector changeDetector;
     private Path path = Paths.get("/home/brennomello/Documentos/Log-karaf/output.txt");
     private BufferedWriter writer;
     
@@ -394,58 +394,15 @@ public class FoTSensorStream {
    }
    
    public void cusumConceptDriftStream(){
-       TStream<String> tStream = this.connector.subscribe(TATUWrapper.topicBase + this.fotDeviceStream.getDeviceId() + "/#", this.qos);
-       tStream.print();
-       
-       
-       TStream<List<SensorData>> tStreamSensorData = tStream.map(tuple -> {
-                    List<SensorData> listData = new ArrayList<SensorData>();
-                    
-                    try{
-                        
-                        if(TATUWrapper.isValidTATUAnswer(tuple)){
-                                
-                                
-                            JsonParser parser = new JsonParser();
-
-                            JsonElement element = parser.parse(tuple);
-                            JsonObject jObject = element.getAsJsonObject();
-
-
-                            JsonObject body = jObject.getAsJsonObject("BODY");
-                            
-                            JsonElement elementTimeStamp = body.get("TimeStamp");
-                            long delay = System.currentTimeMillis()-elementTimeStamp.getAsLong();
-                            System.out.println("Delay Message " + this.Sensorid + ": " + delay);
-                            
-                            JsonArray jsonArray = body.getAsJsonArray(this.Sensorid);
-
-                            if(jsonArray != null){
-                                SensorData sensorData = null;
-                                for (int i = 0; i < jsonArray.size(); i++) {
-                                    JsonElement jsonElement = jsonArray.get(i);
-                                    String value = String.valueOf(jsonElement.getAsDouble());
-                                    sensorData = new SensorData(value, LocalDateTime.now(), this, fotDeviceStream, delay);  
-                                    if(sensorData != null) 
-                                        listData.add(sensorData);
-                                }
-                                
-                            }
-                            
-                           
-                        }
-                        
-                    }catch(Exception e){
-                        System.out.println("Erro parser: " + e.getMessage());
-                    }
-                    
-                    return listData;
-		});
+       TStream<String> tStream = initGetSensorData();
+       TStream<List<SensorData>> tStreamSensorData = paserTatuStream(tStream);
       
        
-       TWindow<List<SensorData>, Integer> window = tStreamSensorData.last(50, Functions.unpartitioned());
+       TWindow<List<SensorData>, Integer> window = tStreamSensorData.last(35, Functions.unpartitioned());
        
-       this.changeDetector = new CusumDM();
+       //this.changeDetector = new CusumDM();
+       CusumDM detector = new CusumDM();
+       detector.lambdaOption.setValue(1);
        
        TStream<List<Double>> readings = window.batch((List, integer) -> {
            List<Double> output = new ArrayList<>();  
@@ -456,9 +413,10 @@ public class FoTSensorStream {
                   for (SensorData sensorData : listData) {
                      double value = Double.valueOf(sensorData.getValue());
                      System.out.println(value);
-                     this.changeDetector.input(value);
+                     //this.changeDetector.input(value);
+                     detector.input(value);
                      output.add(value);
-                     if(this.changeDetector.getChange()){
+                     if(detector.getChange()){
                          change = true;
                      }
                   }

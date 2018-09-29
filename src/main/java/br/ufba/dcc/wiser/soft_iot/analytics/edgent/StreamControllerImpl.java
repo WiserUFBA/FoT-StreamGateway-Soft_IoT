@@ -19,7 +19,7 @@ import org.apache.edgent.topology.Topology;
 
 /**
  *
- * @author Brenno Mello <brennodemello.bm at gmail.com>
+ * @author Brenno 
  */
 public class StreamControllerImpl {
     
