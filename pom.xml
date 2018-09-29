@@ -393,4 +393,15 @@
             </build>
         </profile>
     </profiles>
+    
+    <distributionManagement>
+        <repository>
+            <id>release-repo</id>
+            <url>https://github.com/WiserUFBA/wiser-mvn-repo/raw/master/releases</url>
+        </repository>
+        <snapshotRepository>
+            <id>snapshot-repo</id>
+            <url>https://github.com/WiserUFBA/wiser-mvn-repo/raw/master/snapshots</url>
+        </snapshotRepository>
+    </distributionManagement>
 </project>

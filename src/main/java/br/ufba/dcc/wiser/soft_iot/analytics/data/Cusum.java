@@ -7,7 +7,7 @@ package br.ufba.dcc.wiser.soft_iot.analytics.data;
 
 /**
  *
- * @author Brenno Mello <brennodemello.bm at gmail.com>
+ * @author brenno
  */
 public interface Cusum<T> {
     
