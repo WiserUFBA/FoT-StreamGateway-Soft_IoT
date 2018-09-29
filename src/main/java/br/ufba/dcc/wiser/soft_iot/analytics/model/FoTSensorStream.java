@@ -22,6 +22,7 @@ import java.nio.file.Paths;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.concurrent.TimeUnit;
 import moa.classifiers.core.driftdetection.ChangeDetector;
 import moa.classifiers.core.driftdetection.CusumDM;
 import org.apache.edgent.connectors.mqtt.MqttConfig;
@@ -68,8 +69,10 @@ public class FoTSensorStream {
 	UtilDebug.printDebugConsole(mqttConfig.getServerURLs()[0]);
         this.connector = new MqttStreams(topology, mqttConfig.getServerURLs()[0], Sensorid);
         
-        if(this.connector == null)
-            throw new ExceptionInInitializerError("Error starting sensor");
+        if(this.connector == null){
+            System.out.println("Error starting Broker MQTT");
+            throw new ExceptionInInitializerError("Error starting Broker MQTT");
+        }
         this.qos = 0;
         
         try{
@@ -172,7 +175,7 @@ public class FoTSensorStream {
                 String topic = TATUWrapper.topicBase + this.fotDeviceStream.getDeviceId();
 		
                 
-                TStream<String> cmdOutput = this.topology.strings(flowRequest);;
+                TStream<String> cmdOutput = this.topology.strings(flowRequest); 
                 cmdOutput.print();
                 
                                 
@@ -250,7 +253,7 @@ public class FoTSensorStream {
        
        tStream.print();
        
-       /*
+       
        TStream<List<SensorData>> tStreamSensorData = tStream.map(tuple -> {
                     List<SensorData> listData = new ArrayList<SensorData>();
                     
@@ -295,9 +298,9 @@ public class FoTSensorStream {
                     return listData;
 		});
       
-       */
        
-       /*
+       
+       
        TWindow<List<SensorData>, Integer> windowSeconds = tStreamSensorData.last(60, TimeUnit.SECONDS, Functions.unpartitioned());
        TStream<Integer> readings = windowSeconds.aggregate((List, integer) -> {
              
@@ -327,7 +330,7 @@ public class FoTSensorStream {
        
        readings.print();
        
-       */
+       
        
        
        /*
