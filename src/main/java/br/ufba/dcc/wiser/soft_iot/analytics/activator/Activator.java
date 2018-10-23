@@ -17,8 +17,6 @@ public class Activator implements BundleActivator {
         Topology topology = controllerEdgent.createTopology();
         //MqttStreams mqttStreams = controllerEdgent.createMqttStreams(topology, url);
         
-        
-        
         /*Receber dados da SOFT-IoT */
         //TStream<String> tStream = controllerEdgent.subscribeMqttStreams("dev/res", 0, mqttStreams);
         

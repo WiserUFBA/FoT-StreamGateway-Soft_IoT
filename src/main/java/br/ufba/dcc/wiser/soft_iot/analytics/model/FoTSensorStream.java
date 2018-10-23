@@ -164,7 +164,7 @@ public class FoTSensorStream {
         try{
 			
 		String flowRequest;
-		if(this.collectionTime >= 0){
+		if(this.collectionTime <= 0){
                     flowRequest = TATUWrapper.getTATUFlowValue(this.Sensorid, 2000, 2000);
 		}else{
                     flowRequest = TATUWrapper.getTATUFlowValue(this.Sensorid, this.collectionTime, this.publishingTime);
@@ -179,7 +179,7 @@ public class FoTSensorStream {
                 cmdOutput.print();
                 
                                 
-                this.connector.publish(cmdOutput, topic, this.qos, true);
+                this.connector.publish(cmdOutput, topic, this.qos, false);
                 
         
 	}catch (ServiceUnavailableException e) {
@@ -197,7 +197,7 @@ public class FoTSensorStream {
        return tStream;
    }
    
-   private TStream<List<SensorData>> paserTatuStream(TStream<String> tStream){
+   private TStream<List<SensorData>> paserTatuStreamFlow(TStream<String> tStream){
        
        TStream<List<SensorData>> tStreamSensorData = tStream.map(tuple -> {
                     List<SensorData> listData = new ArrayList<SensorData>();
@@ -216,9 +216,14 @@ public class FoTSensorStream {
                             JsonObject body = jObject.getAsJsonObject("BODY");
                             
                             JsonElement elementTimeStamp = body.get("TimeStamp");
-                            long delay = System.currentTimeMillis()-elementTimeStamp.getAsLong();
-                            System.out.println("Delay Message " + this.Sensorid + ": " + delay);
                             
+                            long delay = 0;
+                            if(elementTimeStamp != null){
+                             
+                                delay = System.currentTimeMillis()-elementTimeStamp.getAsLong();
+                                System.out.println("Delay Message " + this.Sensorid + ": " + delay);
+                            
+                            }
                             JsonArray jsonArray = body.getAsJsonArray(this.Sensorid);
 
                             if(jsonArray != null){
@@ -246,6 +251,51 @@ public class FoTSensorStream {
        return tStreamSensorData;
    }
    
+    private TStream<List<SensorData>> paserTatuStreamGet(TStream<String> tStream){
+       
+       TStream<List<SensorData>> tStreamSensorData = tStream.map(tuple -> {
+                    List<SensorData> listData = new ArrayList<SensorData>();
+                    
+                    try{
+                        
+                        if(TATUWrapper.isValidTATUAnswer(tuple)){
+                                
+                                
+                            JsonParser parser = new JsonParser();
+
+                            JsonElement element = parser.parse(tuple);
+                            JsonObject jObject = element.getAsJsonObject();
+
+
+                            JsonObject body = jObject.getAsJsonObject("BODY");
+                            
+                            JsonElement elementTimeStamp = body.get("TimeStamp");
+                            
+                            long delay = 0;
+                            if(elementTimeStamp != null){
+                             
+                                delay = System.currentTimeMillis()-elementTimeStamp.getAsLong();
+                                System.out.println("Delay Message " + this.Sensorid + ": " + delay);
+                            
+                            }
+                            JsonObject jsonData = body.getAsJsonObject(this.Sensorid);
+
+                            String value = String.valueOf(jsonData.getAsDouble());
+                            SensorData sensorData = new SensorData(value, LocalDateTime.now(), this, fotDeviceStream, delay);  
+                            if(sensorData != null) 
+                                listData.add(sensorData);
+                               
+                        }
+                        
+                    }catch(Exception e){
+                        System.out.println("Erro parser: " + e.getMessage());
+                    }
+                    
+                    return listData;
+		});
+      
+       return tStreamSensorData;
+   }
  
    private void init(){
        UtilDebug.printDebugConsole(TATUWrapper.topicBase + this.fotDeviceStream.getDeviceId() + "/#");
@@ -398,7 +448,7 @@ public class FoTSensorStream {
    
    public void cusumConceptDriftStream(){
        TStream<String> tStream = initGetSensorData();
-       TStream<List<SensorData>> tStreamSensorData = paserTatuStream(tStream);
+       TStream<List<SensorData>> tStreamSensorData = paserTatuStreamGet(tStream);
       
        
        TWindow<List<SensorData>, Integer> window = tStreamSensorData.last(35, Functions.unpartitioned());
