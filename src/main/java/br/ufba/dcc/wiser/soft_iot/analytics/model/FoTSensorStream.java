@@ -22,6 +22,7 @@ import java.nio.file.Paths;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.concurrent.TimeUnit;
 import moa.classifiers.core.driftdetection.ChangeDetector;
 import moa.classifiers.core.driftdetection.CusumDM;
 import org.apache.edgent.connectors.mqtt.MqttConfig;
@@ -80,8 +81,8 @@ public class FoTSensorStream {
           
         //sendTatuFlow();
         //initGetSensorData();
-        cusumConceptDriftStream();
-        //init();
+        //cusumConceptDriftStream();
+        init();
     }   
     
     
@@ -250,7 +251,7 @@ public class FoTSensorStream {
        
        tStream.print();
        
-       /*
+       
        TStream<List<SensorData>> tStreamSensorData = tStream.map(tuple -> {
                     List<SensorData> listData = new ArrayList<SensorData>();
                     
@@ -295,9 +296,9 @@ public class FoTSensorStream {
                     return listData;
 		});
       
-       */
        
-       /*
+       
+       
        TWindow<List<SensorData>, Integer> windowSeconds = tStreamSensorData.last(60, TimeUnit.SECONDS, Functions.unpartitioned());
        TStream<Integer> readings = windowSeconds.aggregate((List, integer) -> {
              
@@ -327,7 +328,7 @@ public class FoTSensorStream {
        
        readings.print();
        
-       */
+       
        
        
        /*
