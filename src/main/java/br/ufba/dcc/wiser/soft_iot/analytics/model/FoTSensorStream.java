@@ -198,7 +198,8 @@ public class FoTSensorStream {
    }
    
    private TStream<List<SensorData>> paserTatuStreamFlow(TStream<String> tStream){
-       
+       //{"CODE":"POST","HEADER":{"NAME":"sc01"},"METHOD":"GET","BODY":{"humiditySensor":"37.12"}}
+
        TStream<List<SensorData>> tStreamSensorData = tStream.map(tuple -> {
                     List<SensorData> listData = new ArrayList<SensorData>();
                     
