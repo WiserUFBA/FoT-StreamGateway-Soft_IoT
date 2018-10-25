@@ -19,7 +19,7 @@ import org.apache.edgent.topology.Topology;
 
 /**
  *
- * @author Brenno Mello <brennodemello.bm at gmail.com>
+ * @author Brenno 
  */
 public class StreamControllerImpl {
     
@@ -86,7 +86,7 @@ public class StreamControllerImpl {
         for (JsonElement jsonElement : jarray) {
             if(jsonElement.isJsonObject()){
                 
-                
+                System.out.println("Loop 1");
                 FoTDeviceStream fotDeviceStream = new FoTDeviceStream(this.topology, this.mqttConfig);
                 JsonObject fotElement = jsonElement.getAsJsonObject();
                 fotDeviceStream.setDeviceId(fotElement.get("id").getAsString());
@@ -104,7 +104,7 @@ public class StreamControllerImpl {
                 for (JsonElement jsonElementSensor : jsonArraySensors) {
                     if(jsonElementSensor.isJsonObject()){
                         JsonObject fotSensor = jsonElementSensor.getAsJsonObject();
-                         String sensorID = fotSensor.get("id").getAsString();
+                        String sensorID = fotSensor.get("id").getAsString();
                         
                         FoTSensorStream fotSensorStream = new FoTSensorStream(this.topology, this.mqttConfig, sensorID, fotDeviceStream);
                         
@@ -112,7 +112,9 @@ public class StreamControllerImpl {
                         fotSensorStream.setCollectionTime(fotSensor.get("collection_time").getAsInt());
                         fotSensorStream.setPublishingTime(fotSensor.get("publishing_time").getAsInt());
                         
-                        fotSensorStream.sendTatuFlow();
+                        //fotSensorStream.sendTatuFlow();
+                        
+                        System.out.println("Loop 2");
                         
                         UtilDebug.printDebugConsole(fotSensorStream.getSensorid());
                         UtilDebug.printDebugConsole(String.valueOf(fotSensorStream.getCollectionTime()));

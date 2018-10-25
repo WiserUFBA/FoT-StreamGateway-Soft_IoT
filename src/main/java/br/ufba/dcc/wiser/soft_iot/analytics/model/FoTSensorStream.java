@@ -49,7 +49,7 @@ public class FoTSensorStream {
     private int qos;
     private FoTDeviceStream fotDeviceStream; 
     private CusumStream cusumStream;
-    private ChangeDetector changeDetector;
+    //private ChangeDetector changeDetector;
     private Path path = Paths.get("/home/brennomello/Documentos/Log-karaf/output.txt");
     private BufferedWriter writer;
     
@@ -69,8 +69,10 @@ public class FoTSensorStream {
 	UtilDebug.printDebugConsole(mqttConfig.getServerURLs()[0]);
         this.connector = new MqttStreams(topology, mqttConfig.getServerURLs()[0], Sensorid);
         
-        if(this.connector == null)
-            throw new ExceptionInInitializerError("Error starting sensor");
+        if(this.connector == null){
+            System.out.println("Error starting Broker MQTT");
+            throw new ExceptionInInitializerError("Error starting Broker MQTT");
+        }
         this.qos = 0;
         
         try{
@@ -162,7 +164,7 @@ public class FoTSensorStream {
         try{
 			
 		String flowRequest;
-		if(this.collectionTime >= 0){
+		if(this.collectionTime <= 0){
                     flowRequest = TATUWrapper.getTATUFlowValue(this.Sensorid, 2000, 2000);
 		}else{
                     flowRequest = TATUWrapper.getTATUFlowValue(this.Sensorid, this.collectionTime, this.publishingTime);
@@ -177,7 +179,7 @@ public class FoTSensorStream {
                 cmdOutput.print();
                 
                                 
-                this.connector.publish(cmdOutput, topic, this.qos, true);
+                this.connector.publish(cmdOutput, topic, this.qos, false);
                 
         
 	}catch (ServiceUnavailableException e) {
@@ -195,8 +197,9 @@ public class FoTSensorStream {
        return tStream;
    }
    
-   private TStream<List<SensorData>> paserTatuStream(TStream<String> tStream){
-       
+   private TStream<List<SensorData>> paserTatuStreamFlow(TStream<String> tStream){
+       //{"CODE":"POST","HEADER":{"NAME":"sc01"},"METHOD":"GET","BODY":{"humiditySensor":"37.12"}}
+
        TStream<List<SensorData>> tStreamSensorData = tStream.map(tuple -> {
                     List<SensorData> listData = new ArrayList<SensorData>();
                     
@@ -214,9 +217,14 @@ public class FoTSensorStream {
                             JsonObject body = jObject.getAsJsonObject("BODY");
                             
                             JsonElement elementTimeStamp = body.get("TimeStamp");
-                            long delay = System.currentTimeMillis()-elementTimeStamp.getAsLong();
-                            System.out.println("Delay Message " + this.Sensorid + ": " + delay);
                             
+                            long delay = 0;
+                            if(elementTimeStamp != null){
+                             
+                                delay = System.currentTimeMillis()-elementTimeStamp.getAsLong();
+                                System.out.println("Delay Message " + this.Sensorid + ": " + delay);
+                            
+                            }
                             JsonArray jsonArray = body.getAsJsonArray(this.Sensorid);
 
                             if(jsonArray != null){
@@ -244,6 +252,51 @@ public class FoTSensorStream {
        return tStreamSensorData;
    }
    
+    private TStream<List<SensorData>> paserTatuStreamGet(TStream<String> tStream){
+       
+       TStream<List<SensorData>> tStreamSensorData = tStream.map(tuple -> {
+                    List<SensorData> listData = new ArrayList<SensorData>();
+                    
+                    try{
+                        
+                        if(TATUWrapper.isValidTATUAnswer(tuple)){
+                                
+                                
+                            JsonParser parser = new JsonParser();
+
+                            JsonElement element = parser.parse(tuple);
+                            JsonObject jObject = element.getAsJsonObject();
+
+
+                            JsonObject body = jObject.getAsJsonObject("BODY");
+                            
+                            JsonElement elementTimeStamp = body.get("TimeStamp");
+                            
+                            long delay = 0;
+                            if(elementTimeStamp != null){
+                             
+                                delay = System.currentTimeMillis()-elementTimeStamp.getAsLong();
+                                System.out.println("Delay Message " + this.Sensorid + ": " + delay);
+                            
+                            }
+                            JsonObject jsonData = body.getAsJsonObject(this.Sensorid);
+
+                            String value = String.valueOf(jsonData.getAsDouble());
+                            SensorData sensorData = new SensorData(value, LocalDateTime.now(), this, fotDeviceStream, delay);  
+                            if(sensorData != null) 
+                                listData.add(sensorData);
+                               
+                        }
+                        
+                    }catch(Exception e){
+                        System.out.println("Erro parser: " + e.getMessage());
+                    }
+                    
+                    return listData;
+		});
+      
+       return tStreamSensorData;
+   }
  
    private void init(){
        UtilDebug.printDebugConsole(TATUWrapper.topicBase + this.fotDeviceStream.getDeviceId() + "/#");
@@ -395,58 +448,15 @@ public class FoTSensorStream {
    }
    
    public void cusumConceptDriftStream(){
-       TStream<String> tStream = this.connector.subscribe(TATUWrapper.topicBase + this.fotDeviceStream.getDeviceId() + "/#", this.qos);
-       tStream.print();
-       
-       
-       TStream<List<SensorData>> tStreamSensorData = tStream.map(tuple -> {
-                    List<SensorData> listData = new ArrayList<SensorData>();
-                    
-                    try{
-                        
-                        if(TATUWrapper.isValidTATUAnswer(tuple)){
-                                
-                                
-                            JsonParser parser = new JsonParser();
-
-                            JsonElement element = parser.parse(tuple);
-                            JsonObject jObject = element.getAsJsonObject();
-
-
-                            JsonObject body = jObject.getAsJsonObject("BODY");
-                            
-                            JsonElement elementTimeStamp = body.get("TimeStamp");
-                            long delay = System.currentTimeMillis()-elementTimeStamp.getAsLong();
-                            System.out.println("Delay Message " + this.Sensorid + ": " + delay);
-                            
-                            JsonArray jsonArray = body.getAsJsonArray(this.Sensorid);
-
-                            if(jsonArray != null){
-                                SensorData sensorData = null;
-                                for (int i = 0; i < jsonArray.size(); i++) {
-                                    JsonElement jsonElement = jsonArray.get(i);
-                                    String value = String.valueOf(jsonElement.getAsDouble());
-                                    sensorData = new SensorData(value, LocalDateTime.now(), this, fotDeviceStream, delay);  
-                                    if(sensorData != null) 
-                                        listData.add(sensorData);
-                                }
-                                
-                            }
-                            
-                           
-                        }
-                        
-                    }catch(Exception e){
-                        System.out.println("Erro parser: " + e.getMessage());
-                    }
-                    
-                    return listData;
-		});
+       TStream<String> tStream = initGetSensorData();
+       TStream<List<SensorData>> tStreamSensorData = paserTatuStreamGet(tStream);
       
        
-       TWindow<List<SensorData>, Integer> window = tStreamSensorData.last(50, Functions.unpartitioned());
+       TWindow<List<SensorData>, Integer> window = tStreamSensorData.last(35, Functions.unpartitioned());
        
-       this.changeDetector = new CusumDM();
+       //this.changeDetector = new CusumDM();
+       CusumDM detector = new CusumDM();
+       detector.lambdaOption.setValue(1);
        
        TStream<List<Double>> readings = window.batch((List, integer) -> {
            List<Double> output = new ArrayList<>();  
@@ -457,9 +467,10 @@ public class FoTSensorStream {
                   for (SensorData sensorData : listData) {
                      double value = Double.valueOf(sensorData.getValue());
                      System.out.println(value);
-                     this.changeDetector.input(value);
+                     //this.changeDetector.input(value);
+                     detector.input(value);
                      output.add(value);
-                     if(this.changeDetector.getChange()){
+                     if(detector.getChange()){
                          change = true;
                      }
                   }
