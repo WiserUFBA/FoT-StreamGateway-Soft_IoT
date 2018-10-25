@@ -198,7 +198,7 @@ public class FoTSensorStream {
    }
    
    private TStream<List<SensorData>> paserTatuStreamFlow(TStream<String> tStream){
-       //{"CODE":"POST","HEADER":{"NAME":"sc01"},"METHOD":"GET","BODY":{"humiditySensor":"37.12"}}
+      
 
        TStream<List<SensorData>> tStreamSensorData = tStream.map(tuple -> {
                     List<SensorData> listData = new ArrayList<SensorData>();
@@ -253,7 +253,8 @@ public class FoTSensorStream {
    }
    
     private TStream<List<SensorData>> paserTatuStreamGet(TStream<String> tStream){
-       
+        //{"CODE":"POST","HEADER":{"NAME":"sc01"},"METHOD":"GET","BODY":{"humiditySensor":"37.12"}}
+        //{"CODE":"POST","METHOD":"FLOW","HEADER":{"NAME":"ufbaino04"},"BODY":{"temperatureSensor":["36","26"],"FLOW":{"publish":10000,"collect":5000}}}
        TStream<List<SensorData>> tStreamSensorData = tStream.map(tuple -> {
                     List<SensorData> listData = new ArrayList<SensorData>();
                     
@@ -263,29 +264,32 @@ public class FoTSensorStream {
                                 
                                 
                             JsonParser parser = new JsonParser();
-
                             JsonElement element = parser.parse(tuple);
                             JsonObject jObject = element.getAsJsonObject();
-
-
-                            JsonObject body = jObject.getAsJsonObject("BODY");
+                            JsonElement elementMethod = jObject.get("METHOD");
+                            
+                            JsonObject body = jObject.getAsJsonObject("BODY");        
                             
                             JsonElement elementTimeStamp = body.get("TimeStamp");
-                            
-                            long delay = 0;
-                            if(elementTimeStamp != null){
-                             
-                                delay = System.currentTimeMillis()-elementTimeStamp.getAsLong();
-                                System.out.println("Delay Message " + this.Sensorid + ": " + delay);
-                            
-                            }
-                            JsonObject jsonData = body.getAsJsonObject(this.Sensorid);
 
-                            String value = String.valueOf(jsonData.getAsDouble());
-                            SensorData sensorData = new SensorData(value, LocalDateTime.now(), this, fotDeviceStream, delay);  
-                            if(sensorData != null) 
-                                listData.add(sensorData);
-                               
+                                long delay = 0;
+                                if(elementTimeStamp != null){
+
+                                    delay = System.currentTimeMillis()-elementTimeStamp.getAsLong();
+                                    System.out.println("Delay Message " + this.Sensorid + ": " + delay);
+
+                                }
+                            
+                            JsonObject jsonData = body.getAsJsonObject(this.Sensorid);
+                            
+                            if(elementMethod.getAsString().equals("GET")){    
+
+                                String value = String.valueOf(jsonData.getAsDouble());
+                                SensorData sensorData = new SensorData(value, LocalDateTime.now(), this, fotDeviceStream, delay);  
+                                if(sensorData != null) 
+                                    listData.add(sensorData);
+                                
+                            }
                         }
                         
                     }catch(Exception e){
