@@ -23,7 +23,7 @@ import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.TimeUnit;
-import moa.classifiers.core.driftdetection.ChangeDetector;
+//import moa.classifiers.core.driftdetection.ChangeDetector;
 import moa.classifiers.core.driftdetection.CusumDM;
 import org.apache.edgent.connectors.mqtt.MqttConfig;
 import org.apache.edgent.connectors.mqtt.MqttStreams;
@@ -83,8 +83,8 @@ public class FoTSensorStream {
           
         //sendTatuFlow();
         //initGetSensorData();
-        //cusumConceptDriftStream();
-        init();
+        cusumConceptDriftStream();
+        //init();
     }   
     
     
@@ -272,17 +272,18 @@ public class FoTSensorStream {
                             
                             JsonElement elementTimeStamp = body.get("TimeStamp");
 
-                                long delay = 0;
-                                if(elementTimeStamp != null){
-
-                                    delay = System.currentTimeMillis()-elementTimeStamp.getAsLong();
-                                    System.out.println("Delay Message " + this.Sensorid + ": " + delay);
-
-                                }
+                            long delay = 0;
                             
-                            JsonObject jsonData = body.getAsJsonObject(this.Sensorid);
+                            if(elementTimeStamp != null){
+
+                                delay = System.currentTimeMillis()-elementTimeStamp.getAsLong();
+                                System.out.println("Delay Message " + this.Sensorid + ": " + delay);
+
+                            }
                             
-                            if(elementMethod.getAsString().equals("GET")){    
+                            JsonElement jsonData = body.get(this.Sensorid);
+                            
+                            if(elementMethod.getAsString().equals("GET") && jsonData != null){    
 
                                 String value = String.valueOf(jsonData.getAsDouble());
                                 SensorData sensorData = new SensorData(value, LocalDateTime.now(), this, fotDeviceStream, delay);  
@@ -454,7 +455,6 @@ public class FoTSensorStream {
    public void cusumConceptDriftStream(){
        TStream<String> tStream = initGetSensorData();
        TStream<List<SensorData>> tStreamSensorData = paserTatuStreamGet(tStream);
-      
        
        TWindow<List<SensorData>, Integer> window = tStreamSensorData.last(35, Functions.unpartitioned());
        
@@ -470,7 +470,7 @@ public class FoTSensorStream {
                 for (List<SensorData> listData : List) {    
                   for (SensorData sensorData : listData) {
                      double value = Double.valueOf(sensorData.getValue());
-                     System.out.println(value);
+                     //System.out.println(value);
                      //this.changeDetector.input(value);
                      detector.input(value);
                      output.add(value);
@@ -481,9 +481,9 @@ public class FoTSensorStream {
                 }
 
                 if(change){
-                    System.out.println("Concept Drift detectado");
+                    System.out.println("Concept Drift detected " + this.Sensorid);
                 }else{
-                    System.out.println("Concept Drift não detectado");   
+                    System.out.println("Concept Drift not detected " + this.Sensorid);   
                 } 
                 
             }catch(Exception e){
