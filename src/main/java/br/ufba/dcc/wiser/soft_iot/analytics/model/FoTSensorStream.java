@@ -456,7 +456,7 @@ public class FoTSensorStream {
        TStream<String> tStream = initGetSensorData();
        TStream<List<SensorData>> tStreamSensorData = paserTatuStreamGet(tStream);
        
-       TWindow<List<SensorData>, Integer> window = tStreamSensorData.last(35, Functions.unpartitioned());
+       TWindow<List<SensorData>, Integer> window = tStreamSensorData.last(60, TimeUnit.SECONDS, Functions.unpartitioned());
        
        //this.changeDetector = new CusumDM();
        CusumDM detector = new CusumDM();
@@ -467,10 +467,11 @@ public class FoTSensorStream {
            try{
                 boolean change = false;     
 
-                for (List<SensorData> listData : List) {    
+                for (List<SensorData> listData : List) { 
+                  //System.out.println("List");
                   for (SensorData sensorData : listData) {
                      double value = Double.valueOf(sensorData.getValue());
-                     //System.out.println(value);
+                     System.out.println(value);
                      //this.changeDetector.input(value);
                      detector.input(value);
                      output.add(value);
