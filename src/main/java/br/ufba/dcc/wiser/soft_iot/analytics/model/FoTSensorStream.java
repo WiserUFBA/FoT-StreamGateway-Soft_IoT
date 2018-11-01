@@ -456,14 +456,15 @@ public class FoTSensorStream {
        TStream<String> tStream = initGetSensorData();
        TStream<List<SensorData>> tStreamSensorData = paserTatuStreamGet(tStream);
        
-       TWindow<List<SensorData>, Integer> window = tStreamSensorData.last(35, Functions.unpartitioned());
+       TWindow<List<SensorData>, Integer> window = tStreamSensorData.last(80, Functions.unpartitioned());
        
        //this.changeDetector = new CusumDM();
        CusumDM detector = new CusumDM();
        detector.lambdaOption.setValue(1);
+       //detector.getChange()
        
-       TStream<List<Double>> readings = window.batch((List, integer) -> {
-           List<Double> output = new ArrayList<>();  
+       TStream<List<SensorData>> readings = window.batch((List, integer) -> {
+           List<SensorData> output = new ArrayList<>();  
            try{
                 boolean change = false;     
 
@@ -473,13 +474,13 @@ public class FoTSensorStream {
                      //System.out.println(value);
                      //this.changeDetector.input(value);
                      detector.input(value);
-                     output.add(value);
+                     output.add(sensorData);
                      if(detector.getChange()){
                          change = true;
                      }
                   }
                 }
-
+                
                 if(change){
                     System.out.println("Concept Drift detected " + this.Sensorid);
                 }else{
