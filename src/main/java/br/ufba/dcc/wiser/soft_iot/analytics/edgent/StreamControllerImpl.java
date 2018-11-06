@@ -35,6 +35,8 @@ public class StreamControllerImpl {
     private List<FoTDeviceStream> listFoTDeviceStream;
     private int defaultCollectionTime;
     private int defaultPublishingTime;
+    private String bootstrapServers = "localhost:9092";
+    
     
     public StreamControllerImpl(){
         
@@ -87,7 +89,7 @@ public class StreamControllerImpl {
             if(jsonElement.isJsonObject()){
                 
                 System.out.println("Loop 1");
-                FoTDeviceStream fotDeviceStream = new FoTDeviceStream(this.topology, this.mqttConfig);
+                FoTDeviceStream fotDeviceStream = new FoTDeviceStream(this.topology, this.mqttConfig, bootstrapServers);
                 JsonObject fotElement = jsonElement.getAsJsonObject();
                 fotDeviceStream.setDeviceId(fotElement.get("id").getAsString());
                 fotDeviceStream.setLatitude(fotElement.get("latitude").getAsFloat());

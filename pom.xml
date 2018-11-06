@@ -50,7 +50,14 @@
             <version>1.10.5</version>
             <scope>compile</scope>
         </dependency>
-      
+        
+        <dependency>
+            <groupId>org.apache.edgent</groupId>
+            <artifactId>edgent-connectors-kafka</artifactId>
+            <version>1.2.0</version>
+            <scope>compile</scope>
+        </dependency>
+                
         <dependency>
             <groupId>nz.ac.waikato.cms.moa</groupId>
             <artifactId>moa</artifactId>

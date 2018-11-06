@@ -21,7 +21,9 @@ import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.concurrent.TimeUnit;
 //import moa.classifiers.core.driftdetection.ChangeDetector;
 import moa.classifiers.core.driftdetection.CusumDM;
@@ -32,6 +34,7 @@ import org.apache.edgent.topology.Topology;
 import org.osgi.service.blueprint.container.ServiceUnavailableException;
 import org.apache.edgent.function.Functions;
 import org.apache.edgent.topology.TWindow;
+import org.apache.edgent.connectors.kafka.KafkaProducer;
 
 /**
  *
@@ -52,7 +55,7 @@ public class FoTSensorStream {
     //private ChangeDetector changeDetector;
     private Path path = Paths.get("/home/brennomello/Documentos/Log-karaf/output.txt");
     private BufferedWriter writer;
-    
+    private boolean changeCusum;
     
     /**
      *  Armengue, melhorar
@@ -190,8 +193,8 @@ public class FoTSensorStream {
    
     
    private TStream<String> initGetSensorData(){    
-       UtilDebug.printDebugConsole(TATUWrapper.topicBase + this.fotDeviceStream.getDeviceId() + "/#");
-       TStream<String> tStream = this.connector.subscribe(TATUWrapper.topicBase + this.fotDeviceStream.getDeviceId() + "/#", this.qos);
+       UtilDebug.printDebugConsole(TATUWrapper.topicBase + this.fotDeviceStream.getDeviceId() + "/RES");
+       TStream<String> tStream = this.connector.subscribe(TATUWrapper.topicBase + this.fotDeviceStream.getDeviceId() + "/RES", this.qos);
        tStream.print();
               
        return tStream;
@@ -456,47 +459,88 @@ public class FoTSensorStream {
        TStream<String> tStream = initGetSensorData();
        TStream<List<SensorData>> tStreamSensorData = paserTatuStreamGet(tStream);
        
-       TWindow<List<SensorData>, Integer> window = tStreamSensorData.last(60, TimeUnit.SECONDS, Functions.unpartitioned());
+       TWindow<List<SensorData>, Integer> window = tStreamSensorData.last(100, Functions.unpartitioned());
        
        //this.changeDetector = new CusumDM();
        CusumDM detector = new CusumDM();
        detector.lambdaOption.setValue(1);
+       this.changeCusum = false;
        
-       TStream<List<Double>> readings = window.batch((List, integer) -> {
-           List<Double> output = new ArrayList<>();  
+       TStream<List<SensorData>> readings = window.batch((List, integer) -> {
+           List<SensorData> output = new ArrayList<>();  
            try{
-                boolean change = false;     
+                //boolean change = false;     
 
                 for (List<SensorData> listData : List) { 
                   //System.out.println("List");
                   for (SensorData sensorData : listData) {
                      double value = Double.valueOf(sensorData.getValue());
-                     System.out.println(value);
+                     //System.out.println(value);
                      //this.changeDetector.input(value);
                      detector.input(value);
-                     output.add(value);
+                     output.add(sensorData);
                      if(detector.getChange()){
-                         change = true;
+                        this.changeCusum = true;
                      }
                   }
                 }
-
+                
+                /*
                 if(change){
                     System.out.println("Concept Drift detected " + this.Sensorid);
                 }else{
                     System.out.println("Concept Drift not detected " + this.Sensorid);   
                 } 
+                */
                 
             }catch(Exception e){
                 System.out.print(e.getMessage());
             }
+           
             return output;
            
       });
        
+      //if(this.changeCusum){
+        System.out.println("Concept Drift detected " + this.Sensorid);
+        TStream<List<JsonObject>> sensorDataJsonStream =  readings.map((t) -> {
+              List<JsonObject> output = new ArrayList<JsonObject>();  
+              for (SensorData sensorData : t) {
+                JsonObject sensorDataJson = new JsonObject();
+                String deviceId = sensorData.getDevice().getDeviceId();
+                String sensorId = sensorData.getSensor().getSensorid();
+                String valueSensor = sensorData.getValue();
+                sensorDataJson.addProperty("deviceId", deviceId);
+                sensorDataJson.addProperty("senorId", sensorId);
+                sensorDataJson.addProperty("valueSenor", valueSensor);
+                output.add(sensorDataJson);
+              }
+              return output; 
+          });
+        
+        sensorDataJsonStream.asString().print();
+                
+          sendMessageKafka(sensorDataJsonStream);
+      //}
       readings.print();
-      
    }
+   
+    public void sendMessageKafka(TStream<List<JsonObject>> readings){
+      String topic = TATUWrapper.topicBase + this.fotDeviceStream.getDeviceId() + "/" + this.Sensorid;
+
+      Map<String,Object> config = new HashMap<>();
+      config.put("bootstrap.servers", this.fotDeviceStream.getBootstrapServers());
+
+      KafkaProducer kafka = new KafkaProducer(this.topology, () -> config);
+
+      //TStream<JsonObject> sensorReadings = t.poll(
+      //             () -> getSensorReading(), 5, TimeUnit.SECONDS);
+
+      // publish as sensor readings as JSON
+      
+      //kafka.publish(readings, null, readings.asString(), tuple -> tuple.toString(), topic);
+   }
+   
    
    public void verifyValue(TStream<List<SensorData>> tStreamSensorData){
        

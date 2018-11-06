@@ -25,21 +25,27 @@ public class FoTDeviceStream {
     private float latitude;
     private float longitude;
     private List<FoTSensorStream> listFoTSensorStream;
+    private String bootstrapServers;
 
     private final MqttConfig mqttConfig;
         
    
     
     public FoTDeviceStream(Topology topology, MqttConfig mqttConfig) {
-        this(topology, null, mqttConfig);
+        this(topology, null, mqttConfig, null);
+    }
+    
+     public FoTDeviceStream(Topology topology, MqttConfig mqttConfig, String bootstrapServers) {
+        this(topology, null, mqttConfig, bootstrapServers);
     }
     
     public FoTDeviceStream(Topology topology, Properties properties) {
-        this(topology, properties, null);
+        this(topology, properties, null, null);
     }
 
     
-    public FoTDeviceStream(Topology topology, Properties properties, MqttConfig mqttConfig) {
+    public FoTDeviceStream(Topology topology, Properties properties, MqttConfig mqttConfig, String bootstrapServers) {
+        this.bootstrapServers = bootstrapServers;
         this.topology = topology;
         //this.clientMqttId = "FoTDeviceStream";
         this.deviceId = "";
@@ -86,6 +92,20 @@ public class FoTDeviceStream {
 
     public void setDeviceId(String deviceId) {
         this.deviceId = deviceId;
+    }
+
+    /**
+     * @return the bootstrapServers
+     */
+    public String getBootstrapServers() {
+        return bootstrapServers;
+    }
+
+    /**
+     * @param bootstrapServers the bootstrapServers to set
+     */
+    public void setBootstrapServers(String bootstrapServers) {
+        this.bootstrapServers = bootstrapServers;
     }
    
    
