@@ -225,7 +225,7 @@
                         <Embed-Directory>target/dependency</Embed-Directory>
                         <Embed-StripGroup>true</Embed-StripGroup>
 			<Embed-Transitive>true</Embed-Transitive>
-                        <Import-Package>!com.sun.jdmk.comm, !com.ibm.uvm.tools, javax.jmdns, org.jboss.netty.bootstrap, sun.nio.ch *</Import-Package>
+                        <Import-Package>!com.sun.jdmk.comm, !com.ibm.uvm.tools, !javax.jmdns, !org.jboss.netty.bootstrap, !sun.nio.ch, *</Import-Package>
                     </instructions>
                     
                 </configuration>
