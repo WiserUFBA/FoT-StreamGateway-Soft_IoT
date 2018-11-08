@@ -520,7 +520,7 @@ public class FoTSensorStream {
         
         sensorDataJsonStream.asString().print();
                 
-        sendMessageKafka(sensorDataJsonStream);
+        //sendMessageKafka(sensorDataJsonStream);
       //}
       readings.print();
    }
