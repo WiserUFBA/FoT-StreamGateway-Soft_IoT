@@ -520,7 +520,7 @@ public class FoTSensorStream {
         
         sensorDataJsonStream.asString().print();
                 
-          sendMessageKafka(sensorDataJsonStream);
+        sendMessageKafka(sensorDataJsonStream);
       //}
       readings.print();
    }
@@ -532,7 +532,8 @@ public class FoTSensorStream {
       config.put("bootstrap.servers", this.fotDeviceStream.getBootstrapServers());
 
       KafkaProducer kafka = new KafkaProducer(this.topology, () -> config);
-
+      
+      
       //TStream<JsonObject> sensorReadings = t.poll(
       //             () -> getSensorReading(), 5, TimeUnit.SECONDS);
 
@@ -541,7 +542,8 @@ public class FoTSensorStream {
       //kafka.publish(readings, null, readings.asString(), tuple -> tuple.toString(), topic);
    }
    
-   
+     
+    
    public void verifyValue(TStream<List<SensorData>> tStreamSensorData){
        
        TStream<String> tStreamOutputStream = tStreamSensorData.map((list) -> {
