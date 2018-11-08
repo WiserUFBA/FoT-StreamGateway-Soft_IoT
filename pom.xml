@@ -225,6 +225,7 @@
                         <Embed-StripGroup>true</Embed-StripGroup>
 			<Embed-Transitive>true</Embed-Transitive>
                     </instructions>
+                    
                 </configuration>
             </plugin>
             
