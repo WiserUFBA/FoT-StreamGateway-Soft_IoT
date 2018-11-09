@@ -459,12 +459,14 @@ public class FoTSensorStream {
        TStream<String> tStream = initGetSensorData();
        TStream<List<SensorData>> tStreamSensorData = paserTatuStreamGet(tStream);
        
-       TWindow<List<SensorData>, Integer> window = tStreamSensorData.last(100, Functions.unpartitioned());
+       TWindow<List<SensorData>, Integer> window = tStreamSensorData.last(10, Functions.unpartitioned());
        
        //this.changeDetector = new CusumDM();
        CusumDM detector = new CusumDM();
        detector.lambdaOption.setValue(1);
        this.changeCusum = false;
+       
+       
        
        TStream<List<SensorData>> readings = window.batch((List, integer) -> {
            List<SensorData> output = new ArrayList<>();  
@@ -500,9 +502,11 @@ public class FoTSensorStream {
             return output;
            
       });
-       
+      
+
       //if(this.changeCusum){
-        System.out.println("Concept Drift detected " + this.Sensorid);
+        //System.out.println("Concept Drift detected " + this.Sensorid);
+        //this.changeCusum = false;
         TStream<List<JsonObject>> sensorDataJsonStream =  readings.map((t) -> {
               List<JsonObject> output = new ArrayList<JsonObject>();  
               for (SensorData sensorData : t) {
@@ -518,11 +522,11 @@ public class FoTSensorStream {
               return output; 
           });
         
-        sensorDataJsonStream.asString().print();
-                
-        //sendMessageKafka(sensorDataJsonStream);
+         sensorDataJsonStream.asString().print();
+         
       //}
-      readings.print();
+      sendMessageKafka(sensorDataJsonStream);
+      //readings.print();
    }
    
     public void sendMessageKafka(TStream<List<JsonObject>> readings){
@@ -537,9 +541,11 @@ public class FoTSensorStream {
       //TStream<JsonObject> sensorReadings = t.poll(
       //             () -> getSensorReading(), 5, TimeUnit.SECONDS);
 
-      // publish as sensor readings as JSON
+      //publish as sensor readings as JSON
+      kafka.publish(readings, null,  
+              (t) -> {return readings.asString().toString();}, 
+              (t) -> {return topic;}, null);
       
-      //kafka.publish(readings, null, readings.asString(), tuple -> tuple.toString(), topic);
    }
    
      
