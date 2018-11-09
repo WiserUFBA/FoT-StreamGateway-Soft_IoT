@@ -56,6 +56,7 @@ public class FoTSensorStream {
     private Path path = Paths.get("/home/brennomello/Documentos/Log-karaf/output.txt");
     private BufferedWriter writer;
     private boolean changeCusum;
+    private KafkaProducer kafkaProducer;
     
     /**
      *  Armengue, melhorar
@@ -77,6 +78,12 @@ public class FoTSensorStream {
             throw new ExceptionInInitializerError("Error starting Broker MQTT");
         }
         this.qos = 0;
+        
+      Map<String,Object> config = new HashMap<>();
+      config.put("bootstrap.servers", this.fotDeviceStream.getBootstrapServers());
+
+      this.kafkaProducer = new KafkaProducer(this.topology, () -> config);
+        
         
         try{
             writer = Files.newBufferedWriter(path);
@@ -531,18 +538,12 @@ public class FoTSensorStream {
    
     public void sendMessageKafka(TStream<List<JsonObject>> readings){
       String topic = TATUWrapper.topicBase + this.fotDeviceStream.getDeviceId() + "/" + this.Sensorid;
-
-      Map<String,Object> config = new HashMap<>();
-      config.put("bootstrap.servers", this.fotDeviceStream.getBootstrapServers());
-
-      KafkaProducer kafka = new KafkaProducer(this.topology, () -> config);
-      
-      
+            
       //TStream<JsonObject> sensorReadings = t.poll(
       //             () -> getSensorReading(), 5, TimeUnit.SECONDS);
 
       //publish as sensor readings as JSON
-      kafka.publish(readings, null,  
+      this.kafkaProducer.publish(readings, null,  
               (t) -> {return readings.asString().toString();}, 
               (t) -> {return topic;}, null);
       
