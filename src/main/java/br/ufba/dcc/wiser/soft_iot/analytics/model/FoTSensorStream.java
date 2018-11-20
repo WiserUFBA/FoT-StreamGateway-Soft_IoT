@@ -559,7 +559,7 @@ public class FoTSensorStream {
            
            for (SensorData sensorData : list) {    
                if(Double.valueOf(sensorData.getValue()) >= this.dataMax || Double.valueOf(sensorData.getValue()) <= this.dataMin){
-                output = "Alarm Sensor: " + true + " Sensor: " + this.Sensorid + " value: " + sensorData.getValue();
+                  output = "Alarm Sensor: " + true + " Sensor: " + this.Sensorid + " value: " + sensorData.getValue();
                }
            }
            
