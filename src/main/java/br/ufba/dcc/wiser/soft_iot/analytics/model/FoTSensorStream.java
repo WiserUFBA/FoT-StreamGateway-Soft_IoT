@@ -8,6 +8,7 @@ package br.ufba.dcc.wiser.soft_iot.analytics.model;
 
 
 import br.ufba.dcc.wiser.soft_iot.analytics.data.CusumStream;
+import br.ufba.dcc.wiser.soft_iot.analytics.kafka.ProducerCreatorKafka;
 import br.ufba.dcc.wiser.soft_iot.analytics.util.UtilDebug;
 import br.ufba.dcc.wiser.soft_iot.tatu.TATUWrapper;
 import com.google.gson.JsonArray;
@@ -24,6 +25,7 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.concurrent.ExecutionException;
 import java.util.concurrent.TimeUnit;
 //import moa.classifiers.core.driftdetection.ChangeDetector;
 import moa.classifiers.core.driftdetection.CusumDM;
@@ -34,7 +36,11 @@ import org.apache.edgent.topology.Topology;
 import org.osgi.service.blueprint.container.ServiceUnavailableException;
 import org.apache.edgent.function.Functions;
 import org.apache.edgent.topology.TWindow;
-import org.apache.edgent.connectors.kafka.KafkaProducer;
+import org.apache.kafka.clients.producer.Producer;
+import org.apache.kafka.clients.producer.ProducerRecord;
+import org.apache.kafka.clients.producer.RecordMetadata;
+//import org.apache.edgent.connectors.kafka.KafkaProducer;
+
 
 /**
  *
@@ -56,7 +62,9 @@ public class FoTSensorStream {
     private Path path = Paths.get("/home/brennomello/Documentos/Log-karaf/output.txt");
     private BufferedWriter writer;
     private boolean changeCusum;
-    private KafkaProducer kafkaProducer;
+    //private KafkaProducer kafkaProducer;
+    private Producer<Long, String> producerKafka;
+    private String topicKafka;
     
     /**
      *  Armengue, melhorar
@@ -79,18 +87,35 @@ public class FoTSensorStream {
         }
         this.qos = 0;
         
-      Map<String,Object> config = new HashMap<>();
-      config.put("bootstrap.servers", this.fotDeviceStream.getBootstrapServers());
-
-      this.kafkaProducer = new KafkaProducer(this.topology, () -> config);
         
         
         try{
             writer = Files.newBufferedWriter(path);
+            this.producerKafka = ProducerCreatorKafka.createProducer();
+            if(this.producerKafka == null){
+                System.out.println("Error starting Kafka Stream");
+                throw new ExceptionInInitializerError("Error starting Kafka Stream");
+            }
+            
+            //Map<String,Object> config = new HashMap<>();
+            //config.put("bootstrap.servers", this.fotDeviceStream.getBootstrapServers());
+
+            //this.kafkaProducer = new KafkaProducer(this.topology, () -> config);
+            
+            /*
+            if(this.kafkaProducer == null){
+                System.out.println("Error starting Kafka Stream");
+                throw new ExceptionInInitializerError("Error starting Kafka Stream");
+            }
+           */
+            
         }catch(IOException e){
             System.out.println(e.getMessage());
-        }  
-          
+        }catch(Exception e) {
+            System.out.println(e.getMessage());
+        } 
+         
+        this.topicKafka = TATUWrapper.topicBase + "."  + this.fotDeviceStream.getDeviceId() + "." + this.Sensorid;
         //sendTatuFlow();
         //initGetSensorData();
         cusumConceptDriftStream();
@@ -510,43 +535,122 @@ public class FoTSensorStream {
            
       });
       
-
-      //if(this.changeCusum){
+        //{"CODE":"POST","METHOD":"FLOW","HEADER":{"NAME":"ufbaino04"},"BODY":{"temperatureSensor":["36","26"],"FLOW":{"publish":10000,"collect":5000}}}
+        //if(this.changeCusum){
         //System.out.println("Concept Drift detected " + this.Sensorid);
         //this.changeCusum = false;
-        TStream<List<JsonObject>> sensorDataJsonStream =  readings.map((t) -> {
-              List<JsonObject> output = new ArrayList<JsonObject>();  
-              for (SensorData sensorData : t) {
-                JsonObject sensorDataJson = new JsonObject();
-                String deviceId = sensorData.getDevice().getDeviceId();
-                String sensorId = sensorData.getSensor().getSensorid();
-                String valueSensor = sensorData.getValue();
-                sensorDataJson.addProperty("deviceId", deviceId);
-                sensorDataJson.addProperty("senorId", sensorId);
-                sensorDataJson.addProperty("valueSenor", valueSensor);
-                output.add(sensorDataJson);
+        
+        
+        TStream<JsonObject> sensorDataJsonStream =  readings.map((sensorData) -> {
+              //List<JsonObject> output = new ArrayList<JsonObject>();
+              JsonObject sensorDataJson = new JsonObject();
+              SensorData index = sensorData.get(1);
+              String deviceId = index.getDevice().getDeviceId();
+              String sensorId = index.getSensor().getSensorid();
+              //String valueSensor = index.getValue();
+              sensorDataJson.addProperty("deviceId", deviceId);
+              sensorDataJson.addProperty("sensorId", sensorId);
+              //sensorDataJson.addProperty("valueSensor", valueSensor);
+              
+              JsonArray arrayData = new JsonArray();
+              for (SensorData sensorDataColect : sensorData) {
+                arrayData.add(sensorDataColect.getValue());
+                //output.add(sensorDataJson);
               }
-              return output; 
+              
+              sensorDataJson.add("valueSensor", arrayData);
+              
+              return sensorDataJson; 
           });
         
-         sensorDataJsonStream.asString().print();
+         sensorDataJsonStream.print();
          
       //}
-      sendMessageKafka(sensorDataJsonStream);
+      
+      /*
+      try{
+          
+            System.out.println("Send Message Kafka ");
+            String topic = TATUWrapper.topicBase + "."  + this.fotDeviceStream.getDeviceId() + "." + this.Sensorid;
+            System.out.println("Send Message before print ");
+            
+            this.kafkaProducer.publish(sensorDataJsonStream.asString(),topic);
+            System.out.println("Send Message after print ");
+            
+      
+      }catch(Exception e){
+            System.out.println("Error Kafka method " + this.Sensorid + " " + e.getMessage());
+            StackTraceElement[] stack = e.getStackTrace();
+              for (StackTraceElement stackTraceElement : stack) {
+                  System.out.println("Error class " + " " + stackTraceElement.getClassName());
+                  System.out.println("Error file " + " " + stackTraceElement.getFileName());
+                  System.out.println("Error method " + " " + stackTraceElement.getMethodName());
+                  System.out.println("Error line " + " " + stackTraceElement.getLineNumber());
+                  
+              }
+          }
+      */
+      
+      System.out.println("Send Message Kafka TRUE");   
+      sensorDataJsonStream.sink((JsonObject t) -> {
+          
+          
+          try{
+            System.out.println("Send Message Kafka " + t.toString());
+            String topic = TATUWrapper.topicBase + "."  + this.fotDeviceStream.getDeviceId() + "." + this.Sensorid;
+            System.out.println("Send Message before print ");
+            //this.topology.strings(t.toString()).print();
+            //this.topology.of(t.getAsString()).print();
+            //if(this.changeCusum){
+            ProducerRecord<Long, String> record = new ProducerRecord<Long, String>(this.topicKafka,
+					t.toString());
+	    
+            System.out.println("Data Record " + record.value());	
+	    if(this.producerKafka != null)
+                this.producerKafka.send(record);
+	    //System.out.println("Record sent to partition " + metadata.partition() + " with offset " + metadata.offset());	
+
+            //}
+            
+            System.out.println("Send Message after print ");
+            //this.kafkaProducer.publish(this.topology.of(t.toString()),topic);
+          }catch(Exception e){
+            System.out.println("Error Kafka method " + this.Sensorid + " " + e.getMessage());
+            StackTraceElement[] stack = e.getStackTrace();
+              for (StackTraceElement stackTraceElement : stack) {
+                  System.out.println("Error class " + " " + stackTraceElement.getClassName());
+                  System.out.println("Error file " + " " + stackTraceElement.getFileName());
+                  System.out.println("Error method " + " " + stackTraceElement.getMethodName());
+                  System.out.println("Error line " + " " + stackTraceElement.getLineNumber());
+                  
+              }
+          }
+      });
+      
       //readings.print();
    }
    
-    public void sendMessageKafka(TStream<List<JsonObject>> readings){
-      String topic = TATUWrapper.topicBase + this.fotDeviceStream.getDeviceId() + "/" + this.Sensorid;
-            
-      //TStream<JsonObject> sensorReadings = t.poll(
-      //             () -> getSensorReading(), 5, TimeUnit.SECONDS);
+   
+   
+   
+    public void sendMessageKafka(TStream<JsonObject> readings){
+      try{
+        System.out.println("Send Message Kafka");
+        //String topic = TATUWrapper.topicBase + "/" + this.fotDeviceStream.getDeviceId() + "/" + this.Sensorid;
+        String topicKafka = TATUWrapper.topicBase + "."  + this.fotDeviceStream.getDeviceId() + "." + this.Sensorid;
 
-      //publish as sensor readings as JSON
-      this.kafkaProducer.publish(readings, null,  
-              (t) -> {return readings.asString().toString();}, 
-              (t) -> {return topic;}, null);
-      
+        //TStream<JsonObject> sensorReadings = t.poll(
+        //             () -> getSensorReading(), 5, TimeUnit.SECONDS);
+
+        //publish as sensor readings as JSON
+        /*
+        this.kafkaProducer.publish(readings, null,  
+                (t) -> {return t.toString();}, 
+                (t) -> {return topic;}, null);
+        */ 
+      }catch(Exception e){
+          System.out.println("Error Kafka method " + this.Sensorid + " " + e.getMessage());
+      }
    }
    
      
