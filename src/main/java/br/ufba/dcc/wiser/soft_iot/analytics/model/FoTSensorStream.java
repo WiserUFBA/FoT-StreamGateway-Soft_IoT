@@ -115,7 +115,8 @@ public class FoTSensorStream {
             System.out.println(e.getMessage());
         } 
          
-        this.topicKafka = TATUWrapper.topicBase + "."  + this.fotDeviceStream.getDeviceId() + "." + this.Sensorid;
+        this.topicKafka = "dev" + "."  + this.fotDeviceStream.getDeviceId() + "." + this.Sensorid;
+        System.out.println("Kafka topic: "+this.topicKafka);
         //sendTatuFlow();
         //initGetSensorData();
         cusumConceptDriftStream();
@@ -597,7 +598,7 @@ public class FoTSensorStream {
           
           try{
             System.out.println("Send Message Kafka " + t.toString());
-            String topic = TATUWrapper.topicBase + "."  + this.fotDeviceStream.getDeviceId() + "." + this.Sensorid;
+            //String topic = TATUWrapper.topicBase + "."  + this.fotDeviceStream.getDeviceId() + "." + this.Sensorid;
             System.out.println("Send Message before print ");
             //this.topology.strings(t.toString()).print();
             //this.topology.of(t.getAsString()).print();
@@ -606,8 +607,9 @@ public class FoTSensorStream {
 					t.toString());
 	    
             System.out.println("Data Record " + record.value());	
-	    if(this.producerKafka != null)
-                this.producerKafka.send(record);
+	    if(this.producerKafka == null)
+                this.producerKafka = ProducerCreatorKafka.createProducer();
+            this.producerKafka.send(record);
 	    //System.out.println("Record sent to partition " + metadata.partition() + " with offset " + metadata.offset());	
 
             //}
