@@ -23,11 +23,25 @@ public class ControllerEdgent {
     }
  
     public void deployTopology(Topology topology){
-        directProvider.submit(topology);
+        getDirectProvider().submit(topology);
     }
     
     public Topology createTopology(){
-        return directProvider.newTopology();
+        return getDirectProvider().newTopology();
+    }
+
+    /**
+     * @return the directProvider
+     */
+    public DirectProvider getDirectProvider() {
+        return directProvider;
+    }
+
+    /**
+     * @param directProvider the directProvider to set
+     */
+    public void setDirectProvider(DirectProvider directProvider) {
+        this.directProvider = directProvider;
     }
     
       

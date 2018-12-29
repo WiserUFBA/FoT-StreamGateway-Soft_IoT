@@ -16,11 +16,13 @@ import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
 import com.google.gson.JsonParser;
 import java.io.BufferedWriter;
+import java.io.FileWriter;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.time.LocalDateTime;
+import java.time.temporal.ChronoUnit;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -59,12 +61,16 @@ public class FoTSensorStream {
     private FoTDeviceStream fotDeviceStream; 
     private CusumStream cusumStream;
     //private ChangeDetector changeDetector;
-    private Path path = Paths.get("/home/brennomello/Documentos/Log-karaf/output.txt");
+    private Path pathLog;
+    private Path newFilePath;
     private BufferedWriter writer;
     private boolean changeCusum;
+    private boolean isInitialized;
     //private KafkaProducer kafkaProducer;
     private Producer<Long, String> producerKafka;
     private String topicKafka;
+    private int throughputSensor;
+    private ProducerCreatorKafka producerCreatorKafka;
     
     /**
      *  Armengue, melhorar
@@ -73,12 +79,19 @@ public class FoTSensorStream {
     private double dataMax = 25;
     private double dataMin = 17;
     
+     /**
+     * Implementar Wavelet
+     */
     
-    public FoTSensorStream(Topology topology, MqttConfig mqttConfig, String Sensorid, FoTDeviceStream fotDeviceStream){
+    
+    public FoTSensorStream(Topology topology, MqttConfig mqttConfig, 
+            String Sensorid, FoTDeviceStream fotDeviceStream, Path pathLog){
         this.topology = topology;
         this.Sensorid = Sensorid;
+        this.isInitialized = true;
         this.fotDeviceStream = fotDeviceStream;
 	UtilDebug.printDebugConsole(mqttConfig.getServerURLs()[0]);
+        this.pathLog = pathLog;
         this.connector = new MqttStreams(topology, mqttConfig.getServerURLs()[0], Sensorid);
         
         if(this.connector == null){
@@ -90,8 +103,26 @@ public class FoTSensorStream {
         
         
         try{
-            writer = Files.newBufferedWriter(path);
-            this.producerKafka = ProducerCreatorKafka.createProducer();
+            Path dir;
+            if(Files.isDirectory(pathLog)){
+               dir = Paths.get(pathLog.toUri());
+            }else{
+               dir = Files.createDirectory(pathLog);
+            }   
+            this.newFilePath = dir.resolve("Log-" + this.fotDeviceStream.getDeviceId() + "-" + this.Sensorid + "-" + LocalDateTime.now().toString() + ".txt");
+            //this.newFilePath = Files.createFile(fileToCreatePath);
+            System.out.println("File " + newFilePath.toString());
+            //writer = new BufferedWriter(Files.newBufferedWriter(newFilePath));
+            
+            //FileWriter fileWriter = new FileWriter(newFilePath.toFile(), true);
+            //this.writer = new BufferedWriter(fileWriter);
+            //writer.write(qos);
+            //writer.append("Teste");
+            //writer.close();
+            
+            Thread.currentThread().setContextClassLoader(null);
+            this.producerCreatorKafka = new ProducerCreatorKafka();
+            this.producerKafka = this.producerCreatorKafka.createProducer();
             if(this.producerKafka == null){
                 System.out.println("Error starting Kafka Stream");
                 throw new ExceptionInInitializerError("Error starting Kafka Stream");
@@ -110,9 +141,23 @@ public class FoTSensorStream {
            */
             
         }catch(IOException e){
-            System.out.println(e.getMessage());
+            StackTraceElement[] stack = e.getStackTrace();
+              for (StackTraceElement stackTraceElement : stack) {
+                  System.out.println("Error class " + " " + stackTraceElement.getClassName());
+                  System.out.println("Error file " + " " + stackTraceElement.getFileName());
+                  System.out.println("Error method " + " " + stackTraceElement.getMethodName());
+                  System.out.println("Error line " + " " + stackTraceElement.getLineNumber());
+                  
+              }
         }catch(Exception e) {
-            System.out.println(e.getMessage());
+            StackTraceElement[] stack = e.getStackTrace();
+              for (StackTraceElement stackTraceElement : stack) {
+                  System.out.println("Error class " + " " + stackTraceElement.getClassName());
+                  System.out.println("Error file " + " " + stackTraceElement.getFileName());
+                  System.out.println("Error method " + " " + stackTraceElement.getMethodName());
+                  System.out.println("Error line " + " " + stackTraceElement.getLineNumber());
+                  
+              }
         } 
          
         this.topicKafka = "dev" + "."  + this.fotDeviceStream.getDeviceId() + "." + this.Sensorid;
@@ -423,12 +468,6 @@ public class FoTSensorStream {
        readings.print();
        
        
-       
-       
-       /*
-       * Implementar Wavelet
-       */
-       
        /*
        this.cusumStream = new CusumStream(0.05, 0.5);       
             
@@ -492,26 +531,76 @@ public class FoTSensorStream {
        TStream<String> tStream = initGetSensorData();
        TStream<List<SensorData>> tStreamSensorData = paserTatuStreamGet(tStream);
        
-       TWindow<List<SensorData>, Integer> window = tStreamSensorData.last(10, Functions.unpartitioned());
+             
+       TWindow<List<SensorData>, Integer> windowthroughput = tStreamSensorData.last(60, TimeUnit.SECONDS, Functions.unpartitioned());
+       
+       
+       windowthroughput.batch((List, integer) -> {
+
+           try{
+            
+            this.throughputSensor = 0;
+            for (List<SensorData> listData : List) { 
+                for (SensorData sensorData : listData) {
+                      throughputSensor++;
+                }
+            }
+            JsonObject sensorDataJson = new JsonObject();
+            sensorDataJson.addProperty("deviceId", this.fotDeviceStream.getDeviceId());
+            sensorDataJson.addProperty("sensorId", this.Sensorid);
+            sensorDataJson.addProperty("throughputStream", throughputSensor);
+            System.out.println("throughputSensor " + throughputSensor);
+            
+            FileWriter fileWriter;
+            //if(Files.exists(this.newFilePath)){
+              // this.writer = Files.newBufferedWriter(Paths.get(this.newFilePath.toUri()));
+            //}else{
+               fileWriter = new FileWriter(this.newFilePath.toFile(), true);
+               this.writer = new BufferedWriter(fileWriter);
+            //}   
+            
+            
+            this.writer.append(sensorDataJson.toString()+ "\n");
+            //this.writer.newLine();
+            
+            writer.close();
+          }catch(Exception e){
+              System.out.println("Error method " + this.Sensorid + " " + e.getMessage());
+              StackTraceElement[] stack = e.getStackTrace();
+              for (StackTraceElement stackTraceElement : stack) {
+                  System.out.println("Error class " + " " + stackTraceElement.getClassName());
+                  System.out.println("Error file " + " " + stackTraceElement.getFileName());
+                  System.out.println("Error method " + " " + stackTraceElement.getMethodName());
+                  System.out.println("Error line " + " " + stackTraceElement.getLineNumber());
+                  
+              }
+          }
+            return null;
+       });
+       
+       
+       TWindow<List<SensorData>, Integer> windowData = tStreamSensorData.last(50, Functions.unpartitioned());
        
        //this.changeDetector = new CusumDM();
        CusumDM detector = new CusumDM();
        detector.lambdaOption.setValue(1);
-       this.changeCusum = false;
+       //this.changeCusum = false;
        
        
        
-       TStream<List<SensorData>> readings = window.batch((List, integer) -> {
+       TStream<List<SensorData>> readings = windowData.batch((List, integer) -> {
            List<SensorData> output = new ArrayList<>();  
+           this.changeCusum = false;
            try{
                 //boolean change = false;     
-
+                //System.out.println("Detecting change " + this.Sensorid + ":"  + this.changeCusum);   
                 for (List<SensorData> listData : List) { 
                   //System.out.println("List");
                   for (SensorData sensorData : listData) {
                      double value = Double.valueOf(sensorData.getValue());
                      //System.out.println(value);
                      //this.changeDetector.input(value);
+                     //System.out.println("Delta: " + detector.deltaOption.getValue());
                      detector.input(value);
                      output.add(sensorData);
                      if(detector.getChange()){
@@ -548,9 +637,11 @@ public class FoTSensorStream {
               SensorData index = sensorData.get(1);
               String deviceId = index.getDevice().getDeviceId();
               String sensorId = index.getSensor().getSensorid();
+              String dateTime = index.getLocalDateTime().toString();
               //String valueSensor = index.getValue();
               sensorDataJson.addProperty("deviceId", deviceId);
               sensorDataJson.addProperty("sensorId", sensorId);
+              sensorDataJson.addProperty("localDateTime", dateTime);
               //sensorDataJson.addProperty("valueSensor", valueSensor);
               
               JsonArray arrayData = new JsonArray();
@@ -564,7 +655,7 @@ public class FoTSensorStream {
               return sensorDataJson; 
           });
         
-         sensorDataJsonStream.print();
+         //sensorDataJsonStream.print();
          
       //}
       
@@ -594,29 +685,58 @@ public class FoTSensorStream {
       
       System.out.println("Send Message Kafka TRUE");   
       sensorDataJsonStream.sink((JsonObject t) -> {
+        //System.out.println("Detecting change " + this.Sensorid +  ": " + this.changeCusum);
+        try{
+           
+            JsonElement delayElement = t.get("localDateTime");
+            LocalDateTime date1 = LocalDateTime.now();
+            LocalDateTime date = LocalDateTime.parse(delayElement.getAsString());
+            long delayLong = date.until(date1, ChronoUnit.SECONDS);
+            t.addProperty("delayFog", delayLong);
+        
+       
+        System.out.println("Windows " + t.toString());
+        System.out.println("Data Size " + t.toString().getBytes().length);
+        t.addProperty("WindowSize", t.toString().getBytes().length);
+        
+            FileWriter fileWriter;
+            //if(Files.exists(this.newFilePath)){
+               //this.writer = Files.newBufferedWriter(Paths.get(this.newFilePath.toUri()));
+            //}else{
+               fileWriter = new FileWriter(this.newFilePath.toFile(), true);
+               this.writer = new BufferedWriter(fileWriter);
+            //}   
+            
+        this.writer.append(t.toString()+"\n");
+        //this.writer.newLine();
+        writer.close();
+        if(this.changeCusum == true || this.isInitialized==true){
+          //System.out.println("Detecting change isInitialized " + this.Sensorid +  ": " + this.isInitialized);     
+          this.isInitialized = false;  
           
-          
-          try{
             System.out.println("Send Message Kafka " + t.toString());
             //String topic = TATUWrapper.topicBase + "."  + this.fotDeviceStream.getDeviceId() + "." + this.Sensorid;
-            System.out.println("Send Message before print ");
+            //System.out.println("Send Message before print ");
             //this.topology.strings(t.toString()).print();
             //this.topology.of(t.getAsString()).print();
             //if(this.changeCusum){
             ProducerRecord<Long, String> record = new ProducerRecord<Long, String>(this.topicKafka,
 					t.toString());
 	    
-            System.out.println("Data Record " + record.value());	
+            System.out.println("Data Record " + record.value());
+            Thread.currentThread().setContextClassLoader(null);
 	    if(this.producerKafka == null)
-                this.producerKafka = ProducerCreatorKafka.createProducer();
+                this.producerKafka = this.producerCreatorKafka.createProducer();
             this.producerKafka.send(record);
 	    //System.out.println("Record sent to partition " + metadata.partition() + " with offset " + metadata.offset());	
 
             //}
             
-            System.out.println("Send Message after print ");
+            //System.out.println("Send Message after print ");
             //this.kafkaProducer.publish(this.topology.of(t.toString()),topic);
-          }catch(Exception e){
+         
+            }  
+         }catch(Exception e){
             System.out.println("Error Kafka method " + this.Sensorid + " " + e.getMessage());
             StackTraceElement[] stack = e.getStackTrace();
               for (StackTraceElement stackTraceElement : stack) {
@@ -626,7 +746,7 @@ public class FoTSensorStream {
                   System.out.println("Error line " + " " + stackTraceElement.getLineNumber());
                   
               }
-          }
+          }  
       });
       
       //readings.print();

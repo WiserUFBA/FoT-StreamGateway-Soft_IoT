@@ -12,6 +12,8 @@ import com.google.gson.JsonArray;
 import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
 import com.google.gson.JsonParser;
+import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.List;
 import org.apache.edgent.connectors.mqtt.MqttConfig;
@@ -35,16 +37,9 @@ public class StreamControllerImpl {
     private List<FoTDeviceStream> listFoTDeviceStream;
     private int defaultCollectionTime;
     private int defaultPublishingTime;
+    private Path pathLog;
     private String bootstrapServers = "localhost:9092";
-    public static String KAFKA_BROKERS = "localhost:9092,localhost:9093,localhost:9094";
-    public static Integer MESSAGE_COUNT=1000;
-    public static String CLIENT_ID="client1";
-    public static String TOPIC_NAME="demo";
-    public static String GROUP_ID_CONFIG="consumerGroup1";
-    public static Integer MAX_NO_MESSAGE_FOUND_COUNT=100;
-    public static String OFFSET_RESET_LATEST="latest";
-    public static String OFFSET_RESET_EARLIER="earliest";
-    public static Integer MAX_POLL_RECORDS=1;
+    private ControllerEdgent controllerEdgent;
     
     public StreamControllerImpl(){
         
@@ -66,7 +61,7 @@ public class StreamControllerImpl {
             
             this.listFoTDeviceStream = new ArrayList<>();
             
-            ControllerEdgent controllerEdgent = new ControllerEdgent();
+            this.controllerEdgent = new ControllerEdgent();
             this.topology = controllerEdgent.createTopology();
             loadFoTDeviceStream();
             
@@ -79,7 +74,12 @@ public class StreamControllerImpl {
     }
     
     public void disconnect(){
-        
+       System.out.println("Disconnect Stream");
+       
+       
+       //Thread.currentThread().getThreadGroup().interrupt();
+       //Thread.currentThread().getThreadGroup().destroy();
+       Thread.currentThread().destroy();
     }
     
     public void loadFoTDeviceStream(){
@@ -116,7 +116,8 @@ public class StreamControllerImpl {
                         JsonObject fotSensor = jsonElementSensor.getAsJsonObject();
                         String sensorID = fotSensor.get("id").getAsString();
                         
-                        FoTSensorStream fotSensorStream = new FoTSensorStream(this.topology, this.mqttConfig, sensorID, fotDeviceStream);
+                        FoTSensorStream fotSensorStream = new FoTSensorStream(this.topology, this.mqttConfig, 
+                                sensorID, fotDeviceStream, this.pathLog);
                         
                         fotSensorStream.setType(fotSensor.get("type").getAsString());
                         fotSensorStream.setCollectionTime(fotSensor.get("collection_time").getAsInt());
@@ -236,6 +237,20 @@ public class StreamControllerImpl {
     public void setDefaultPublishingTime(int defaultPublishingTime) {
         this.defaultPublishingTime = defaultPublishingTime;
     }
-    
+
+    /**
+     * @return the pathLog
+     */
+    public String getPathLog() {
+        return pathLog.toString();
+    }
+
+    /**
+     * @param pathLog the pathLog to set
+     */
+    public void setPathLog(String pathLog) {
+        this.pathLog = Paths.get(pathLog);
+    }
+   
     
 }

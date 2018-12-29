@@ -44,13 +44,22 @@
 
     <dependencies>
         
+        <!--
         <dependency>
             <groupId>org.apache.servicemix.bundles</groupId>
             <artifactId>org.apache.servicemix.bundles.kafka-clients</artifactId>
             <version>2.0.0_1</version>
             <scope>provided</scope>
         </dependency>
-
+        -->
+        
+        <dependency>
+            <groupId>org.apache.kafka</groupId>
+            <artifactId>kafka-clients</artifactId>
+            <version>1.1.0</version>
+	</dependency>
+                
+                
         <dependency>
             <groupId>org.apache.ant</groupId>
             <artifactId>ant</artifactId>
@@ -234,7 +243,7 @@
                         <Import-Package>!com.sun.jdmk.comm, !com.ibm.uvm.tools, !javax.jmdns, !org.jboss.netty.bootstrap, 
                             !sun.nio.ch, !org.jboss.netty.buffer, !org.xerial.snappy, !org.jboss.netty.channel.socket.nio,
                             !org.jboss.netty.channel.group, !org.jboss.netty.channel, !net.jpountz.xxhash,
-                            !net.jpountz.util, !net.jpountz.lz4, !joptsimple, *</Import-Package>
+                            !net.jpountz.util, !net.jpountz.lz4, !joptsimple, !org.apache.kafka.common.message, *</Import-Package>
                     </instructions>
                     
                 </configuration>
