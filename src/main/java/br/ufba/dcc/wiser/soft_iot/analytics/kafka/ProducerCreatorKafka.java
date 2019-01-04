@@ -5,7 +5,7 @@
  */
 package br.ufba.dcc.wiser.soft_iot.analytics.kafka;
 
-import br.ufba.dcc.wiser.soft_iot.analytics.edgent.StreamControllerImpl;
+
 import java.util.Properties;
 import org.apache.kafka.clients.producer.KafkaProducer;
 import org.apache.kafka.clients.producer.Producer;
