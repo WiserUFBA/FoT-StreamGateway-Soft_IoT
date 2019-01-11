@@ -7,7 +7,8 @@ package br.ufba.dcc.wiser.soft_iot.analytics.model;
 
 
 
-import br.ufba.dcc.wiser.soft_iot.analytics.data.CusumStream;
+import br.ufba.dcc.wiser.soft_iot.analytics.conceptDrift.CusumDM;
+import br.ufba.dcc.wiser.soft_iot.analytics.conceptDrift.CusumStream;
 import br.ufba.dcc.wiser.soft_iot.analytics.kafka.ProducerCreatorKafka;
 import br.ufba.dcc.wiser.soft_iot.analytics.util.UtilDebug;
 import br.ufba.dcc.wiser.soft_iot.tatu.TATUWrapper;
@@ -30,7 +31,10 @@ import java.util.Map;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.TimeUnit;
 //import moa.classifiers.core.driftdetection.ChangeDetector;
-import moa.classifiers.core.driftdetection.CusumDM;
+//import moa.classifiers.core.driftdetection.CusumDM;
+import moa.classifiers.core.driftdetection.EWMAChartDM;
+import moa.classifiers.core.driftdetection.GeometricMovingAverageDM;
+import moa.classifiers.core.driftdetection.PageHinkleyDM;
 import org.apache.edgent.connectors.mqtt.MqttConfig;
 import org.apache.edgent.connectors.mqtt.MqttStreams;
 import org.apache.edgent.topology.TStream;
@@ -92,7 +96,7 @@ public class FoTSensorStream {
         this.fotDeviceStream = fotDeviceStream;
 	UtilDebug.printDebugConsole(mqttConfig.getServerURLs()[0]);
         this.pathLog = pathLog;
-        this.connector = new MqttStreams(topology, mqttConfig.getServerURLs()[0], Sensorid);
+        this.connector = new MqttStreams(topology, mqttConfig.getServerURLs()[0], this.fotDeviceStream.getDeviceId()+Sensorid);
         
         if(this.connector == null){
             System.out.println("Error starting Broker MQTT");
@@ -549,7 +553,7 @@ public class FoTSensorStream {
             sensorDataJson.addProperty("deviceId", this.fotDeviceStream.getDeviceId());
             sensorDataJson.addProperty("sensorId", this.Sensorid);
             sensorDataJson.addProperty("throughputStream", throughputSensor);
-            System.out.println("throughputSensor " + throughputSensor);
+            System.out.println("throughputSensor "+ this.fotDeviceStream.getDeviceId() + " " + this.Sensorid + " " + throughputSensor);
             
             FileWriter fileWriter;
             //if(Files.exists(this.newFilePath)){
@@ -583,11 +587,20 @@ public class FoTSensorStream {
        
        //this.changeDetector = new CusumDM();
        CusumDM detector = new CusumDM();
-       detector.lambdaOption.setValue(1);
+       detector.setlambdaOption(1);
        //this.changeCusum = false;
        
+       //PageHinkleyDM detector = new PageHinkleyDM ();
+       //detector.lambdaOption.setValue(0.5);
+       
+       //GeometricMovingAverageDM detector = new GeometricMovingAverageDM ();
+       //detector.lambdaOption.setValue(1);
+       
+       //EWMAChartDM detector = new EWMAChartDM();
+       //detector.lambdaOption.setValue(1);
        
        
+       System.out.println("Concept Drift Detector " + detector.getClass().toString());
        TStream<List<SensorData>> readings = windowData.batch((List, integer) -> {
            List<SensorData> output = new ArrayList<>();  
            this.changeCusum = false;
@@ -600,7 +613,8 @@ public class FoTSensorStream {
                      double value = Double.valueOf(sensorData.getValue());
                      //System.out.println(value);
                      //this.changeDetector.input(value);
-                     //System.out.println("Delta: " + detector.deltaOption.getValue());
+                     System.out.println(this.fotDeviceStream.getDeviceId() + this.Sensorid + " Estimator x_mean: " + detector.getEstimator());
+                     System.out.println(this.fotDeviceStream.getDeviceId() + this.Sensorid + " Sum: " + detector.getSum());
                      detector.input(value);
                      output.add(sensorData);
                      if(detector.getChange()){
@@ -722,7 +736,7 @@ public class FoTSensorStream {
             //if(this.changeCusum){
             ProducerRecord<Long, String> record = new ProducerRecord<Long, String>(this.topicKafka,
 					t.toString());
-	    
+	    //Thread.sleep(10000);
             System.out.println("Data Record " + record.value());
             Thread.currentThread().setContextClassLoader(null);
 	    if(this.producerKafka == null)

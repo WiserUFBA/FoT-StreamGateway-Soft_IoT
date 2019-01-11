@@ -77,9 +77,9 @@ public class StreamControllerImpl {
        System.out.println("Disconnect Stream");
        
        
-       //Thread.currentThread().getThreadGroup().interrupt();
-       //Thread.currentThread().getThreadGroup().destroy();
-       Thread.currentThread().destroy();
+       Thread.currentThread().getThreadGroup().interrupt();
+       Thread.currentThread().getThreadGroup().destroy();
+       //Thread.currentThread().destroy();
     }
     
     public void loadFoTDeviceStream(){

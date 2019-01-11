@@ -21,7 +21,7 @@ import org.apache.kafka.common.serialization.StringSerializer;
 public class ProducerCreatorKafka {
      
     //Settings kafka
-    private String KAFKA_BROKERS;
+    private String KAFKA_BROKERS="18.218.147.104:9092";
     private Integer MESSAGE_COUNT=1000;
     private String CLIENT_ID="client1";
     private String TOPIC_NAME="demo";
@@ -40,10 +40,12 @@ public class ProducerCreatorKafka {
         
     }
     
-     public Producer<Long, String> createProducer() {
+    public Producer<Long, String> createProducer() {
         Properties props = new Properties();
-        props.put(ProducerConfig.BOOTSTRAP_SERVERS_CONFIG, this.getKAFKA_BROKERS());
-        props.put(ProducerConfig.CLIENT_ID_CONFIG, this.getCLIENT_ID());
+        System.out.println(this.KAFKA_BROKERS);
+        System.out.println(this.CLIENT_ID);
+        props.put(ProducerConfig.BOOTSTRAP_SERVERS_CONFIG, this.KAFKA_BROKERS);
+        props.put(ProducerConfig.CLIENT_ID_CONFIG, this.CLIENT_ID);
         props.put(ProducerConfig.KEY_SERIALIZER_CLASS_CONFIG, LongSerializer.class.getName());
         props.put(ProducerConfig.VALUE_SERIALIZER_CLASS_CONFIG, StringSerializer.class.getName());
         //props.put(ProducerConfig.PARTITIONER_CLASS_CONFIG, CustomPartitioner.class.getName());

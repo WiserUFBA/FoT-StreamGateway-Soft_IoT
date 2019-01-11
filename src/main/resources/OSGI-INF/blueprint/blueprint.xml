@@ -22,7 +22,7 @@
      <bean id="ProducerCreatorKafka" class="br.ufba.dcc.wiser.soft_iot.analytics.kafka.ProducerCreatorKafka"
                     init-method="init" destroy-method="disconnect">
                     
-                    <property name="KAFKA_BROKERS" value="${KAFKA_BROKERS-DEFAULT}" />
+                    <property name="KAFKA_BROKERS" value="${KAFKA-BROKERS-DEFAULT}" />
                     
     </bean>
 
@@ -65,8 +65,8 @@
 			<cm:property name="NumberOfHoursDataStored" value="24" />
 			<cm:property name="debugMode" value="false" />
                         <cm:property name="DevicesConnected" value="[]" />
-                        <cm:property name="pathDefaultLog" value="/opt/log-FoTGateway" />
-                        <cm:property name="KAFKA_BROKERS-DEFAULT" value="18.218.147.104:9092"/>
+                        <cm:property name="pathDefaultLog" value="/home/pi/log-karaf"/>
+                        <cm:property name="KAFKA-BROKERS-DEFAULT" value="18.218.147.104:9092"/>
 		</cm:default-properties>
                 
 	</cm:property-placeholder>
