@@ -43,6 +43,8 @@ public class CusumDM {
     private int m_n;
 
     private double sum;
+    
+    private double sumMin;
 
     private double x_mean;
 
@@ -103,6 +105,7 @@ public class CusumDM {
         m_n = 1;
         x_mean = 0.0;
         sum = 0.0;
+        sumMin = 0.0;
         delta = this.deltaOption;
         lambda = this.lambdaOption;
     }
@@ -117,7 +120,9 @@ public class CusumDM {
 
         x_mean = x_mean + (x - x_mean) / (double) m_n;
         sum = Math.max(0, sum + x - x_mean - this.delta);
-
+        
+        sumMin = Math.min(0, x + (x_mean - this.delta) - sumMin);
+        
         m_n++;
 
         // System.out.print(prediction + " " + m_n + " " + (m_p+m_s) + " ");
@@ -129,8 +134,9 @@ public class CusumDM {
         if (m_n < this.minNumInstancesOption) {
             return;
         }
-
-        if (sum > this.lambda) {
+        
+        System.out.print(-this.lambda);
+        if (sum > this.lambda || sumMin < -this.lambda) {
             this.isChangeDetected = true;
         } 
     }
@@ -149,5 +155,9 @@ public class CusumDM {
     
     public double getSum(){
         return this.sum;
+    }
+    
+    public double getSumMin(){
+        return this.sumMin;
     }
 }
