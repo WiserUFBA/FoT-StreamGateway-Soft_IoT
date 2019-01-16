@@ -121,7 +121,8 @@ public class CusumDM {
         x_mean = x_mean + (x - x_mean) / (double) m_n;
         sum = Math.max(0, sum + x - x_mean - this.delta);
         
-        sumMin = Math.min(0, x + (x_mean - this.delta) - sumMin);
+        //sumMin = Math.min(0, x + (x_mean - this.delta) - sumMin);
+        sumMin = Math.min(0, sumMin + x - x_mean - this.delta);
         
         m_n++;
 
@@ -135,7 +136,7 @@ public class CusumDM {
             return;
         }
         
-        System.out.print(-this.lambda);
+        //System.out.print(-this.lambda);
         if (sum > this.lambda || sumMin < -this.lambda) {
             this.isChangeDetected = true;
         } 

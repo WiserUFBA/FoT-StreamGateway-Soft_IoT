@@ -34,7 +34,9 @@ import java.util.concurrent.TimeUnit;
 //import moa.classifiers.core.driftdetection.CusumDM;
 import moa.classifiers.core.driftdetection.EWMAChartDM;
 import moa.classifiers.core.driftdetection.GeometricMovingAverageDM;
+import moa.classifiers.core.driftdetection.HDDM_A_Test;
 import moa.classifiers.core.driftdetection.PageHinkleyDM;
+//import moa.classifiers.core.driftdetection.SEEDChangeDetector;
 import org.apache.edgent.connectors.mqtt.MqttConfig;
 import org.apache.edgent.connectors.mqtt.MqttStreams;
 import org.apache.edgent.topology.TStream;
@@ -587,7 +589,7 @@ public class FoTSensorStream {
        
        //this.changeDetector = new CusumDM();
        CusumDM detector = new CusumDM();
-       detector.setlambdaOption(1);
+       detector.setlambdaOption(50);
        //this.changeCusum = false;
        
        //PageHinkleyDM detector = new PageHinkleyDM ();
@@ -599,6 +601,9 @@ public class FoTSensorStream {
        //EWMAChartDM detector = new EWMAChartDM();
        //detector.lambdaOption.setValue(1);
        
+       //HDDM_A_Test detector = new HDDM_A_Test();
+        
+       //SEEDChangeDetector detector = new SEEDChangeDetector();
        
        System.out.println("Concept Drift Detector " + detector.getClass().toString());
        TStream<List<SensorData>> readings = windowData.batch((List, integer) -> {
@@ -613,8 +618,9 @@ public class FoTSensorStream {
                      double value = Double.valueOf(sensorData.getValue());
                      //System.out.println(value);
                      //this.changeDetector.input(value);
-                     System.out.println(this.fotDeviceStream.getDeviceId() + this.Sensorid + " Estimator x_mean: " + detector.getEstimator());
-                     System.out.println(this.fotDeviceStream.getDeviceId() + this.Sensorid + " Sum: " + detector.getSum());
+                     //System.out.println(this.fotDeviceStream.getDeviceId() + this.Sensorid + " Estimator x_mean: " + detector.getEstimator());
+                     //System.out.println(this.fotDeviceStream.getDeviceId() + this.Sensorid + " Sum: " + detector.getSum());
+                     //System.out.println(this.fotDeviceStream.getDeviceId() + this.Sensorid + " SumMin: " + detector.getSumMin());
                      detector.input(value);
                      output.add(sensorData);
                      if(detector.getChange()){
