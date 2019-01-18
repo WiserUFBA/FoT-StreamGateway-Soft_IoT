@@ -11,6 +11,8 @@ import br.ufba.dcc.wiser.soft_iot.analytics.conceptDrift.CusumDM;
 import br.ufba.dcc.wiser.soft_iot.analytics.conceptDrift.CusumStream;
 import br.ufba.dcc.wiser.soft_iot.analytics.kafka.ProducerCreatorKafka;
 import br.ufba.dcc.wiser.soft_iot.analytics.util.UtilDebug;
+import br.ufba.dcc.wiser.soft_iot.analytics.wavelets.Haar;
+import br.ufba.dcc.wiser.soft_iot.analytics.wavelets.TimeSeries;
 import br.ufba.dcc.wiser.soft_iot.tatu.TATUWrapper;
 import com.google.gson.JsonArray;
 import com.google.gson.JsonElement;
@@ -22,6 +24,7 @@ import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
+import java.text.DecimalFormat;
 import java.time.LocalDateTime;
 import java.time.temporal.ChronoUnit;
 import java.util.ArrayList;
@@ -78,6 +81,11 @@ public class FoTSensorStream {
     private int throughputSensor;
     private ProducerCreatorKafka producerCreatorKafka;
     
+     /**
+     * Wavelet
+     */
+    private Haar haar;
+    
     /**
      *  Armengue, melhorar
      *
@@ -85,9 +93,6 @@ public class FoTSensorStream {
     private double dataMax = 25;
     private double dataMin = 17;
     
-     /**
-     * Implementar Wavelet
-     */
     
     
     public FoTSensorStream(Topology topology, MqttConfig mqttConfig, 
@@ -99,6 +104,8 @@ public class FoTSensorStream {
 	UtilDebug.printDebugConsole(mqttConfig.getServerURLs()[0]);
         this.pathLog = pathLog;
         this.connector = new MqttStreams(topology, mqttConfig.getServerURLs()[0], this.fotDeviceStream.getDeviceId()+Sensorid);
+        this.haar = new Haar();
+        
         
         if(this.connector == null){
             System.out.println("Error starting Broker MQTT");
@@ -147,23 +154,9 @@ public class FoTSensorStream {
            */
             
         }catch(IOException e){
-            StackTraceElement[] stack = e.getStackTrace();
-              for (StackTraceElement stackTraceElement : stack) {
-                  System.out.println("Error class " + " " + stackTraceElement.getClassName());
-                  System.out.println("Error file " + " " + stackTraceElement.getFileName());
-                  System.out.println("Error method " + " " + stackTraceElement.getMethodName());
-                  System.out.println("Error line " + " " + stackTraceElement.getLineNumber());
-                  
-              }
+            printError(e);
         }catch(Exception e) {
-            StackTraceElement[] stack = e.getStackTrace();
-              for (StackTraceElement stackTraceElement : stack) {
-                  System.out.println("Error class " + " " + stackTraceElement.getClassName());
-                  System.out.println("Error file " + " " + stackTraceElement.getFileName());
-                  System.out.println("Error method " + " " + stackTraceElement.getMethodName());
-                  System.out.println("Error line " + " " + stackTraceElement.getLineNumber());
-                  
-              }
+            printError(e);
         } 
          
         this.topicKafka = "dev" + "."  + this.fotDeviceStream.getDeviceId() + "." + this.Sensorid;
@@ -381,7 +374,8 @@ public class FoTSensorStream {
                         }
                         
                     }catch(Exception e){
-                        System.out.println("Erro parser: " + e.getMessage());
+                        //System.out.println("Erro parser: " + e.getMessage());
+                        printError(e);
                     }
                     
                     return listData;
@@ -435,7 +429,7 @@ public class FoTSensorStream {
                         }
                         
                     }catch(Exception e){
-                        System.out.println("Erro parser: " + e.getMessage());
+                       printError(e);
                     }
                     
                     return listData;
@@ -465,8 +459,9 @@ public class FoTSensorStream {
             writer.append("Quantidade de dados " + this.Sensorid +": " + qtdMenssage + "\n");
             //writer.close();
        }catch(IOException e){
-          System.out.println(e.getMessage());
-        }  
+          //System.out.println(e.getMessage());
+          printError(e);
+       }  
             
             return qtdMenssage;
        });
@@ -571,22 +566,16 @@ public class FoTSensorStream {
             
             writer.close();
           }catch(Exception e){
-              System.out.println("Error method " + this.Sensorid + " " + e.getMessage());
-              StackTraceElement[] stack = e.getStackTrace();
-              for (StackTraceElement stackTraceElement : stack) {
-                  System.out.println("Error class " + " " + stackTraceElement.getClassName());
-                  System.out.println("Error file " + " " + stackTraceElement.getFileName());
-                  System.out.println("Error method " + " " + stackTraceElement.getMethodName());
-                  System.out.println("Error line " + " " + stackTraceElement.getLineNumber());
-                  
-              }
+              printError(e);
           }
             return null;
        });
        
        
-       TWindow<List<SensorData>, Integer> windowData = tStreamSensorData.last(50, Functions.unpartitioned());
+       TWindow<List<SensorData>, Integer> windowData = tStreamSensorData.last(100, Functions.unpartitioned());
        
+       TimeSeries timeSeries = new TimeSeries();
+              
        //this.changeDetector = new CusumDM();
        CusumDM detector = new CusumDM();
        detector.setlambdaOption(50);
@@ -609,26 +598,64 @@ public class FoTSensorStream {
        TStream<List<SensorData>> readings = windowData.batch((List, integer) -> {
            List<SensorData> output = new ArrayList<>();  
            this.changeCusum = false;
+           LocalDateTime initDelay = null;
+           boolean initCalcDelay = true;
            try{
                 //boolean change = false;     
                 //System.out.println("Detecting change " + this.Sensorid + ":"  + this.changeCusum);   
+                //System.out.println("initCalcDelay " + initCalcDelay);
                 for (List<SensorData> listData : List) { 
                   //System.out.println("List");
                   for (SensorData sensorData : listData) {
                      double value = Double.valueOf(sensorData.getValue());
+                     if(initCalcDelay){
+                        initCalcDelay = false;
+                        initDelay = sensorData.getLocalDateTime();
+                     }
                      //System.out.println(value);
                      //this.changeDetector.input(value);
                      //System.out.println(this.fotDeviceStream.getDeviceId() + this.Sensorid + " Estimator x_mean: " + detector.getEstimator());
                      //System.out.println(this.fotDeviceStream.getDeviceId() + this.Sensorid + " Sum: " + detector.getSum());
                      //System.out.println(this.fotDeviceStream.getDeviceId() + this.Sensorid + " SumMin: " + detector.getSumMin());
-                     detector.input(value);
-                     output.add(sensorData);
-                     if(detector.getChange()){
+                     timeSeries.addElement(value);
+                     //detector.input(value);
+                     //output.add(sensorData);
+                     //if(detector.getChange()){
+                     //   this.changeCusum = true;
+                     //}
+                  }
+                }
+                //System.out.println("initCalcDelay " + initCalcDelay);
+                initCalcDelay = true;
+                System.out.println("initDelay " + initDelay);
+                if(timeSeries.size()>0){
+                    System.out.println(this.fotDeviceStream.getDeviceId()+this.Sensorid + " Raw Data " + timeSeries.getObservations());
+                    this.haar = new Haar();
+                    this.haar.transform(timeSeries);
+                    List<Double> haarTransformCoefficient = haar.getCoefficientLevel(haar.getLevels()-1);
+                    List<Double> haarTransformDetail = haar.getDetailLevel(haar.getLevels()-1);
+                    System.out.println(this.fotDeviceStream.getDeviceId()+this.Sensorid + " Haar Transform Coefficient" + haarTransformCoefficient.toString());
+                    System.out.println(this.fotDeviceStream.getDeviceId()+this.Sensorid + " Haar Transform Detail" + haarTransformDetail.toString());
+                   
+                for (Double value : haarTransformCoefficient) {
+                    System.out.println(this.fotDeviceStream.getDeviceId() + this.Sensorid + " Estimator x_mean: " + detector.getEstimator());
+                    System.out.println(this.fotDeviceStream.getDeviceId() + this.Sensorid + " Sum: " + detector.getSum());
+                    System.out.println(this.fotDeviceStream.getDeviceId() + this.Sensorid + " SumMin: " + detector.getSumMin());
+                    
+                    DecimalFormat df = new DecimalFormat("0.000");
+                    Double newDouble = Double.valueOf(df.format(value));
+                    SensorData sensorData = new SensorData(newDouble.toString(), initDelay, this, fotDeviceStream);  
+                    output.add(sensorData);
+                    
+                    detector.input(value);
+                    if(detector.getChange()){
                         this.changeCusum = true;
-                     }
+                        //timeSeries.cleaningTimeSeries();
+                    }
                   }
                 }
                 
+                timeSeries.cleaningTimeSeries();
                 /*
                 if(change){
                     System.out.println("Concept Drift detected " + this.Sensorid);
@@ -638,7 +665,7 @@ public class FoTSensorStream {
                 */
                 
             }catch(Exception e){
-                System.out.print(e.getMessage());
+              printError(e);
             }
            
             return output;
@@ -658,6 +685,7 @@ public class FoTSensorStream {
               String deviceId = index.getDevice().getDeviceId();
               String sensorId = index.getSensor().getSensorid();
               String dateTime = index.getLocalDateTime().toString();
+              System.out.println("Delay " + this.Sensorid + dateTime);
               //String valueSensor = index.getValue();
               sensorDataJson.addProperty("deviceId", deviceId);
               sensorDataJson.addProperty("sensorId", sensorId);
@@ -709,7 +737,9 @@ public class FoTSensorStream {
         try{
            
             JsonElement delayElement = t.get("localDateTime");
+            //System.out.println("Second delay " + delayElement);
             LocalDateTime date1 = LocalDateTime.now();
+            System.out.println("TimeStamp " + date1.toString());
             LocalDateTime date = LocalDateTime.parse(delayElement.getAsString());
             long delayLong = date.until(date1, ChronoUnit.SECONDS);
             t.addProperty("delayFog", delayLong);
@@ -757,15 +787,7 @@ public class FoTSensorStream {
          
             }  
          }catch(Exception e){
-            System.out.println("Error Kafka method " + this.Sensorid + " " + e.getMessage());
-            StackTraceElement[] stack = e.getStackTrace();
-              for (StackTraceElement stackTraceElement : stack) {
-                  System.out.println("Error class " + " " + stackTraceElement.getClassName());
-                  System.out.println("Error file " + " " + stackTraceElement.getFileName());
-                  System.out.println("Error method " + " " + stackTraceElement.getMethodName());
-                  System.out.println("Error line " + " " + stackTraceElement.getLineNumber());
-                  
-              }
+            printError(e);
           }  
       });
       
@@ -833,6 +855,18 @@ public class FoTSensorStream {
    public String getDeviceTopic(){
        
        return null;
+   }
+   
+   public void printError(Exception e){
+       System.out.println("Error Kafka method " + this.Sensorid + " " + e.getMessage());
+        StackTraceElement[] stack = e.getStackTrace();
+        for (StackTraceElement stackTraceElement : stack) {
+            System.out.println("Error class " + " " + stackTraceElement.getClassName());
+            System.out.println("Error file " + " " + stackTraceElement.getFileName());
+            System.out.println("Error method " + " " + stackTraceElement.getMethodName());
+            System.out.println("Error line " + " " + stackTraceElement.getLineNumber());
+                  
+        }
    }
 	
 }

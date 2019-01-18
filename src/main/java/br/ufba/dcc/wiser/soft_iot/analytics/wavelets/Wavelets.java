@@ -1,6 +1,10 @@
+package br.ufba.dcc.wiser.soft_iot.analytics.wavelets;
+
+
+import br.ufba.dcc.wiser.soft_iot.analytics.wavelets.TimeSeries;
 import java.util.List;
 
-import br.usp.icmc.biocom.timeseries.TimeSeries;
+
 
 /**
  * @author ricardo

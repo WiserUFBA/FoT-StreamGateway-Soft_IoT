@@ -29,6 +29,14 @@ public class SensorData {
         this.delay = delay;
     }
     
+    public SensorData(String value, LocalDateTime localDateTime, 
+            FoTSensorStream sensor, FoTDeviceStream device){
+        this.value = value;
+        this.localDateTime = localDateTime;
+        this.sensor = sensor;
+        this.device = device;
+        //this.delay = delay;
+    }
     
     public SensorData(String value, FoTSensorStream sensor, FoTDeviceStream device){
         this.value = value;

@@ -8,9 +8,9 @@ package br.ufba.dcc.wiser.soft_iot.analytics.wavelets;
 import java.util.LinkedList;
 import java.util.List;
 
-import org.apache.commons.logging.LogFactory;
+//import org.apache.commons.logging.LogFactory;
 
-import br.usp.icmc.biocom.timeseries.TimeSeries;
+
 
 /**
  * @author ricardo
@@ -77,7 +77,7 @@ public class Haar implements Wavelets {
 	
 	public boolean allowedLevel(int level){
 		if(level >= this.levels || level < 0){
-			LogFactory.getLog(this.getClass()).error("You cannot choose this level. Allowed levels: 0 - " + (this.levels-1));
+			//LogFactory.getLog(this.getClass()).error("You cannot choose this level. Allowed levels: 0 - " + (this.levels-1));
 			return false;
 		}
 		return true;
