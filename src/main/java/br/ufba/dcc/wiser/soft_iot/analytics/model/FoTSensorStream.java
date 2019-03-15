@@ -21,6 +21,7 @@ import com.google.gson.JsonParser;
 import java.io.BufferedWriter;
 import java.io.FileWriter;
 import java.io.IOException;
+import java.math.RoundingMode;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
@@ -51,6 +52,9 @@ import org.apache.kafka.clients.producer.Producer;
 import org.apache.kafka.clients.producer.ProducerRecord;
 import org.apache.kafka.clients.producer.RecordMetadata;
 //import org.apache.edgent.connectors.kafka.KafkaProducer;
+import java.text.NumberFormat;
+import java.util.Locale;
+
 
 
 /**
@@ -600,10 +604,12 @@ public class FoTSensorStream {
            this.changeCusum = false;
            LocalDateTime initDelay = null;
            boolean initCalcDelay = true;
+           LocalDateTime delayTechniques = null;
            try{
                 //boolean change = false;     
                 //System.out.println("Detecting change " + this.Sensorid + ":"  + this.changeCusum);   
                 //System.out.println("initCalcDelay " + initCalcDelay);
+                delayTechniques = LocalDateTime.now();
                 for (List<SensorData> listData : List) { 
                   //System.out.println("List");
                   for (SensorData sensorData : listData) {
@@ -642,8 +648,24 @@ public class FoTSensorStream {
                     System.out.println(this.fotDeviceStream.getDeviceId() + this.Sensorid + " Sum: " + detector.getSum());
                     System.out.println(this.fotDeviceStream.getDeviceId() + this.Sensorid + " SumMin: " + detector.getSumMin());
                     
-                    DecimalFormat df = new DecimalFormat("0.000");
-                    Double newDouble = Double.valueOf(df.format(value));
+                    Locale enlocale  = new Locale("en", "US");
+                    DecimalFormat decimalFormat = (DecimalFormat) NumberFormat.getNumberInstance(enlocale);
+                    decimalFormat.applyPattern("0.000");
+                    //DecimalFormat df = new DecimalFormat("0.000");
+                    //DecimalFormat df = new DecimalFormat("##,000");
+                    System.out.println("ERROr: " + decimalFormat.format(value));
+                    Double newDouble = Double.valueOf(decimalFormat.format(value));
+                    
+                                        
+                    /*
+                    NumberFormat format = NumberFormat.getInstance();
+                    format.setMaximumFractionDigits(2);
+                    format.setMaximumIntegerDigits(2);
+                    format.setRoundingMode(RoundingMode.HALF_UP);
+                    System.out.println("ERROr: " + format.format(value));
+                    Double newDouble = Double.valueOf(format.format(value));
+                    */
+                    
                     SensorData sensorData = new SensorData(newDouble.toString(), initDelay, this, fotDeviceStream);  
                     output.add(sensorData);
                     
@@ -656,6 +678,9 @@ public class FoTSensorStream {
                 }
                 
                 timeSeries.cleaningTimeSeries();
+                
+                System.out.println(this.fotDeviceStream.getDeviceId() + " " + this.Sensorid + " Delay Techniques: " + delayTechniques.until(LocalDateTime.now(), ChronoUnit.MILLIS));
+                
                 /*
                 if(change){
                     System.out.println("Concept Drift detected " + this.Sensorid);
@@ -665,7 +690,7 @@ public class FoTSensorStream {
                 */
                 
             }catch(Exception e){
-              printError(e);
+               printError(e);
             }
            
             return output;

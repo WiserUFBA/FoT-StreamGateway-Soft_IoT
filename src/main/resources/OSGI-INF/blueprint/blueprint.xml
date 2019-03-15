@@ -65,7 +65,8 @@
 			<cm:property name="NumberOfHoursDataStored" value="24" />
 			<cm:property name="debugMode" value="false" />
                         <cm:property name="DevicesConnected" value="[]" />
-                        <cm:property name="pathDefaultLog" value="/home/pi/log-karaf"/>
+                        <!--<cm:property name="pathDefaultLog" value="/home/pi/log-karaf"/>-->
+                        <cm:property name="pathDefaultLog" value="/home/brenno/Documentos/Log-karaf"/>
                         <cm:property name="KAFKA-BROKERS-DEFAULT" value="18.218.147.104:9092"/>
 		</cm:default-properties>
                 
