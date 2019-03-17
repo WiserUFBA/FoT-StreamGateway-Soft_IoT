@@ -3,11 +3,11 @@
     <modelVersion>4.0.0</modelVersion>
 
     <groupId>br.ufba.dcc.wiser.soft_iot.analytics</groupId>
-    <artifactId>fot-gateway-streamanalytics-soft_iot</artifactId>
+    <artifactId>FoT-StreamGateway-Soft_IoT</artifactId>
     <version>1.0.0</version>
     <packaging>bundle</packaging>
 
-    <name>FoT-Gateway-StreamAnalytics-Soft_Iot</name>
+    <name>FoT-StreamGateway-Soft_IoT</name>
 
     <properties>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
