@@ -19,7 +19,12 @@
  http://cxf.apache.org/blueprint/jaxrs http://cxf.apache.org/schemas/blueprint/jaxrs.xsd
  http://cxf.apache.org/blueprint/core http://cxf.apache.org/schemas/blueprint/core.xsd">
 
-     
+     <bean id="ProducerCreatorKafka" class="br.ufba.dcc.wiser.soft_iot.analytics.kafka.ProducerCreatorKafka"
+                    init-method="init" destroy-method="disconnect">
+                    
+                    <property name="KAFKA_BROKERS" value="${KAFKA-BROKERS-DEFAULT}" />
+                    
+    </bean>
 
     <bean id="StreamControllerImpl" class="br.ufba.dcc.wiser.soft_iot.analytics.edgent.StreamControllerImpl"
                     init-method="init" destroy-method="disconnect">
@@ -33,7 +38,8 @@
                     <property name="defaultCollectionTime" value="${DefaultCollectionTimeSensorData}" />
                     <property name="defaultPublishingTime" value="${DefaultPublishingTimeSensorData}" />
                     <property name="jsonDevices" value="${DevicesConnected}" />
-                    
+                    <property name="pathLog" value="${pathDefaultLog}" />
+                                        
     </bean>
     
     	
@@ -59,6 +65,9 @@
 			<cm:property name="NumberOfHoursDataStored" value="24" />
 			<cm:property name="debugMode" value="false" />
                         <cm:property name="DevicesConnected" value="[]" />
+                        <!--<cm:property name="pathDefaultLog" value="/home/pi/log-karaf"/>-->
+                        <cm:property name="pathDefaultLog" value="/home/brenno/Documentos/Log-karaf"/>
+                        <cm:property name="KAFKA-BROKERS-DEFAULT" value="18.218.147.104:9092"/>
 		</cm:default-properties>
                 
 	</cm:property-placeholder>

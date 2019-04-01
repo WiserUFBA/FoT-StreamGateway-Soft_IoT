@@ -1,1 +1,1 @@
-# FoT-Gateway-StreamAnalytics-Soft_Iot
+# FoT-StreamGateway-Soft_Iot

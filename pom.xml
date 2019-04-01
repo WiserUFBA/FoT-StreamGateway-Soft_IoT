@@ -3,11 +3,11 @@
     <modelVersion>4.0.0</modelVersion>
 
     <groupId>br.ufba.dcc.wiser.soft_iot.analytics</groupId>
-    <artifactId>fot-gateway-streamanalytics-soft_iot</artifactId>
+    <artifactId>FoT-StreamGateway-Soft_IoT</artifactId>
     <version>1.0.0</version>
     <packaging>bundle</packaging>
 
-    <name>FoT-Gateway-StreamAnalytics-Soft_Iot</name>
+    <name>FoT-StreamGateway-Soft_IoT</name>
 
     <properties>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
@@ -44,13 +44,22 @@
 
     <dependencies>
         
+        <!--
         <dependency>
             <groupId>org.apache.servicemix.bundles</groupId>
             <artifactId>org.apache.servicemix.bundles.kafka-clients</artifactId>
             <version>2.0.0_1</version>
             <scope>provided</scope>
         </dependency>
-
+        -->
+        
+        <dependency>
+            <groupId>org.apache.kafka</groupId>
+            <artifactId>kafka-clients</artifactId>
+            <version>1.1.0</version>
+	</dependency>
+                
+                
         <dependency>
             <groupId>org.apache.ant</groupId>
             <artifactId>ant</artifactId>
@@ -234,7 +243,7 @@
                         <Import-Package>!com.sun.jdmk.comm, !com.ibm.uvm.tools, !javax.jmdns, !org.jboss.netty.bootstrap, 
                             !sun.nio.ch, !org.jboss.netty.buffer, !org.xerial.snappy, !org.jboss.netty.channel.socket.nio,
                             !org.jboss.netty.channel.group, !org.jboss.netty.channel, !net.jpountz.xxhash,
-                            !net.jpountz.util, !net.jpountz.lz4, !joptsimple, *</Import-Package>
+                            !net.jpountz.util, !net.jpountz.lz4, !joptsimple, !org.apache.kafka.common.message, *</Import-Package>
                     </instructions>
                     
                 </configuration>
