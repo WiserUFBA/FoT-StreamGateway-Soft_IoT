@@ -3,7 +3,7 @@
  * To change this template file, choose Tools | Templates
  * and open the template in the editor.
  */
-package br.ufba.dcc.wiser.soft_iot.analytics.wavelets;
+package br.ufba.dcc.wiser.fotstream.soft_iot.gateway.wavelets;
 
 import java.util.LinkedList;
 import java.util.List;

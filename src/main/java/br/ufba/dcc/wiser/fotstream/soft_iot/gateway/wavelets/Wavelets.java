@@ -1,7 +1,7 @@
-package br.ufba.dcc.wiser.soft_iot.analytics.wavelets;
+package br.ufba.dcc.wiser.fotstream.soft_iot.gateway.wavelets;
 
 
-import br.ufba.dcc.wiser.soft_iot.analytics.wavelets.TimeSeries;
+import br.ufba.dcc.wiser.fotstream.soft_iot.gateway.wavelets.TimeSeries;
 import java.util.List;
 
 

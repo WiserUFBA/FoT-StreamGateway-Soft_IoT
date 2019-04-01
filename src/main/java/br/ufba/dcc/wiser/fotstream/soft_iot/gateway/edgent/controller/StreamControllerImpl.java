@@ -3,11 +3,11 @@
  * To change this template file, choose Tools | Templates
  * and open the template in the editor.
  */
-package br.ufba.dcc.wiser.soft_iot.analytics.edgent;
+package br.ufba.dcc.wiser.fotstream.soft_iot.gateway.edgent.controller;
 
-import br.ufba.dcc.wiser.soft_iot.analytics.model.FoTDeviceStream;
-import br.ufba.dcc.wiser.soft_iot.analytics.model.FoTSensorStream;
-import br.ufba.dcc.wiser.soft_iot.analytics.util.UtilDebug;
+import br.ufba.dcc.wiser.fotstream.soft_iot.gateway.model.FoTDeviceStream;
+import br.ufba.dcc.wiser.fotstream.soft_iot.gateway.model.FoTSensorStream;
+import br.ufba.dcc.wiser.fotstream.soft_iot.gateway.util.UtilDebug;
 import com.google.gson.JsonArray;
 import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;

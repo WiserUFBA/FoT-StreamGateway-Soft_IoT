@@ -3,7 +3,7 @@
  * To change this template file, choose Tools | Templates
  * and open the template in the editor.
  */
-package br.ufba.dcc.wiser.soft_iot.analytics.edgent;
+package br.ufba.dcc.wiser.fotstream.soft_iot.gateway.edgent.controller;
 
 
 import org.apache.edgent.providers.direct.DirectProvider;

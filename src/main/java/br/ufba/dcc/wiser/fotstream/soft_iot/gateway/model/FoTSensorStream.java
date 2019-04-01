@@ -3,16 +3,16 @@
  * To change this template file, choose Tools | Templates
  * and open the template in the editor.
  */
-package br.ufba.dcc.wiser.soft_iot.analytics.model;
+package br.ufba.dcc.wiser.fotstream.soft_iot.gateway.model;
 
 
 
-import br.ufba.dcc.wiser.soft_iot.analytics.conceptDrift.CusumDM;
-import br.ufba.dcc.wiser.soft_iot.analytics.conceptDrift.CusumStream;
-import br.ufba.dcc.wiser.soft_iot.analytics.kafka.ProducerCreatorKafka;
-import br.ufba.dcc.wiser.soft_iot.analytics.util.UtilDebug;
-import br.ufba.dcc.wiser.soft_iot.analytics.wavelets.Haar;
-import br.ufba.dcc.wiser.soft_iot.analytics.wavelets.TimeSeries;
+import br.ufba.dcc.wiser.fotstream.soft_iot.gateway.conceptDrift.CusumDM;
+import br.ufba.dcc.wiser.fotstream.soft_iot.gateway.conceptDrift.CusumStream;
+import br.ufba.dcc.wiser.fotstream.soft_iot.gateway.kafka.ProducerCreatorKafka;
+import br.ufba.dcc.wiser.fotstream.soft_iot.gateway.util.UtilDebug;
+import br.ufba.dcc.wiser.fotstream.soft_iot.gateway.wavelets.Haar;
+import br.ufba.dcc.wiser.fotstream.soft_iot.gateway.wavelets.TimeSeries;
 import br.ufba.dcc.wiser.soft_iot.tatu.TATUWrapper;
 import com.google.gson.JsonArray;
 import com.google.gson.JsonElement;

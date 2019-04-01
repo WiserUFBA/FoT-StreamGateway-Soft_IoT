@@ -1,6 +1,6 @@
-package br.ufba.dcc.wiser.soft_iot.analytics.activator;
+package br.ufba.dcc.wiser.fotstream.soft_iot.gateway.activator;
 
-import br.ufba.dcc.wiser.soft_iot.analytics.edgent.ControllerEdgent;
+import br.ufba.dcc.wiser.fotstream.soft_iot.gateway.edgent.controller.ControllerEdgent;
 import org.apache.edgent.connectors.mqtt.MqttStreams;
 import org.apache.edgent.topology.TStream;
 import org.apache.edgent.topology.Topology;
