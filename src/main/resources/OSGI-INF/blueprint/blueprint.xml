@@ -19,14 +19,14 @@
  http://cxf.apache.org/blueprint/jaxrs http://cxf.apache.org/schemas/blueprint/jaxrs.xsd
  http://cxf.apache.org/blueprint/core http://cxf.apache.org/schemas/blueprint/core.xsd">
 
-     <bean id="ProducerCreatorKafka" class="br.ufba.dcc.wiser.soft_iot.analytics.kafka.ProducerCreatorKafka"
+     <bean id="ProducerCreatorKafka" class="br.ufba.dcc.wiser.fotstream.soft_iot.gateway.kafka.ProducerCreatorKafka"
                     init-method="init" destroy-method="disconnect">
                     
-                    <property name="KAFKA_BROKERS" value="${KAFKA-BROKERS-DEFAULT}" />
+                <property name="KAFKA_BROKERS" value="${KAFKA-BROKERS-DEFAULT}" />
                     
     </bean>
 
-    <bean id="StreamControllerImpl" class="br.ufba.dcc.wiser.soft_iot.analytics.edgent.StreamControllerImpl"
+    <bean id="StreamControllerImpl" class="br.ufba.dcc.wiser.fotstream.soft_iot.gateway.edgent.controller.StreamControllerImpl"
                     init-method="init" destroy-method="disconnect">
                     
                     <property name="serverHost" value="${MQTTHost}" />
@@ -50,7 +50,7 @@
     </bean>
     -->
     
-    <cm:property-placeholder persistent-id="br.ufba.dcc.wiser.soft_iot.gateway.stream_analytics"
+    <cm:property-placeholder persistent-id="br.ufba.dcc.wiser.fotstream.soft_iot.gateway"
 		update-strategy="reload">
 		
                 <cm:default-properties>
@@ -58,7 +58,7 @@
 			<cm:property name="MQTTPort" value="" />
 			<cm:property name="MQTTUsername" value="" />
 			<cm:property name="MQTTPassword" value="" />
-			<cm:property name="MQTTServerId" value="FoTGateway" />
+			<cm:property name="MQTTServerId" value="FoT-StreamGateway" />
 			<cm:property name="DefaultCollectionTimeSensorData" value="3000" />
 			<cm:property name="DefaultPublishingTimeSensorData"
 				value="30000" />
