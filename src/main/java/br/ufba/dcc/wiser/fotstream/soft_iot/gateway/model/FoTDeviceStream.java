@@ -19,7 +19,7 @@ public class FoTDeviceStream {
    
     private final Topology topology;
 
-   
+    private String gatewayID;
     private String deviceId;
     //private String clientMqttId;
     private float latitude;
@@ -32,19 +32,20 @@ public class FoTDeviceStream {
    
     
     public FoTDeviceStream(Topology topology, MqttConfig mqttConfig) {
-        this(topology, null, mqttConfig, null);
+        this(topology, null, mqttConfig, null, null);
     }
     
-     public FoTDeviceStream(Topology topology, MqttConfig mqttConfig, String bootstrapServers) {
-        this(topology, null, mqttConfig, bootstrapServers);
+     public FoTDeviceStream(Topology topology, MqttConfig mqttConfig, String bootstrapServers, String gatewayID) {
+        this(topology, null, mqttConfig, bootstrapServers, gatewayID);
     }
     
     public FoTDeviceStream(Topology topology, Properties properties) {
-        this(topology, properties, null, null);
+        this(topology, properties, null, null, null);
     }
 
     
-    public FoTDeviceStream(Topology topology, Properties properties, MqttConfig mqttConfig, String bootstrapServers) {
+    public FoTDeviceStream(Topology topology, Properties properties, MqttConfig mqttConfig, String bootstrapServers, String gatewayID) {
+        this.gatewayID = gatewayID;
         this.bootstrapServers = bootstrapServers;
         this.topology = topology;
         //this.clientMqttId = "FoTDeviceStream";
@@ -106,6 +107,20 @@ public class FoTDeviceStream {
      */
     public void setBootstrapServers(String bootstrapServers) {
         this.bootstrapServers = bootstrapServers;
+    }
+
+    /**
+     * @return the gatewayID
+     */
+    public String getGatewayID() {
+        return gatewayID;
+    }
+
+    /**
+     * @param gatewayID the gatewayID to set
+     */
+    public void setGatewayID(String gatewayID) {
+        this.gatewayID = gatewayID;
     }
    
    

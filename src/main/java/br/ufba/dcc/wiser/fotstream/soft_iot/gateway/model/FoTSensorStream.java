@@ -163,7 +163,8 @@ public class FoTSensorStream {
             printError(e);
         } 
          
-        this.topicKafka = "dev" + "."  + this.fotDeviceStream.getDeviceId() + "." + this.Sensorid;
+        //this.topicKafka = "dev" + "."  + this.fotDeviceStream.getDeviceId() + "." + this.Sensorid;
+        this.topicKafka = "dev" + "." + this.fotDeviceStream.getGatewayID() + "." + this.fotDeviceStream.getDeviceId() + "." + this.Sensorid;
         System.out.println("Kafka topic: "+this.topicKafka);
         //sendTatuFlow();
         //initGetSensorData();

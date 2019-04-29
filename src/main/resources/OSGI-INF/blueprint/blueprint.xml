@@ -39,6 +39,7 @@
                     <property name="defaultPublishingTime" value="${DefaultPublishingTimeSensorData}" />
                     <property name="jsonDevices" value="${DevicesConnected}" />
                     <property name="pathLog" value="${pathDefaultLog}" />
+                    <property name="gatewayID" value="${FoT-StreamGatewayID}" />
                                         
     </bean>
     
@@ -68,6 +69,7 @@
                         <!--<cm:property name="pathDefaultLog" value="/home/pi/log-karaf"/>-->
                         <cm:property name="pathDefaultLog" value="/home/brenno/Documentos/Log-karaf"/>
                         <cm:property name="KAFKA-BROKERS-DEFAULT" value="18.218.147.104:9092"/>
+                        <cm:property name="FoT-StreamGatewayID" value=""/>
 		</cm:default-properties>
                 
 	</cm:property-placeholder>

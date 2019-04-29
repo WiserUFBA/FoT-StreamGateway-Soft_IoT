@@ -40,6 +40,7 @@ public class StreamControllerImpl {
     private Path pathLog;
     private String bootstrapServers = "localhost:9092";
     private ControllerEdgent controllerEdgent;
+    private String gatewayID;
     
     public StreamControllerImpl(){
         
@@ -49,7 +50,7 @@ public class StreamControllerImpl {
        
         try{
             
-            UtilDebug.printDebugConsole("Init Stream Controller");
+            UtilDebug.printDebugConsole("Init FoT-StreamGateway Controller");
             UtilDebug.printDebugConsole(this.serverHost + " " + this.port);
             UtilDebug.printDebugConsole(this.jsonDevices);
             
@@ -97,7 +98,7 @@ public class StreamControllerImpl {
             if(jsonElement.isJsonObject()){
                 
                 System.out.println("Loop 1");
-                FoTDeviceStream fotDeviceStream = new FoTDeviceStream(this.topology, this.mqttConfig, bootstrapServers);
+                FoTDeviceStream fotDeviceStream = new FoTDeviceStream(this.topology, this.mqttConfig, bootstrapServers, this.gatewayID);
                 JsonObject fotElement = jsonElement.getAsJsonObject();
                 fotDeviceStream.setDeviceId(fotElement.get("id").getAsString());
                 fotDeviceStream.setLatitude(fotElement.get("latitude").getAsFloat());
