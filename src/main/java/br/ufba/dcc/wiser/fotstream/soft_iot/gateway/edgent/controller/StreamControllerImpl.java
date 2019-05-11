@@ -24,6 +24,7 @@ import org.apache.edgent.topology.Topology;
  * @author Brenno 
  */
 public class StreamControllerImpl {
+
     
     private String serverHost;
     private String serverId;
@@ -98,7 +99,7 @@ public class StreamControllerImpl {
             if(jsonElement.isJsonObject()){
                 
                 System.out.println("Loop 1");
-                FoTDeviceStream fotDeviceStream = new FoTDeviceStream(this.topology, this.mqttConfig, bootstrapServers, this.gatewayID);
+                FoTDeviceStream fotDeviceStream = new FoTDeviceStream(this.topology, this.mqttConfig, bootstrapServers, this.getGatewayID());
                 JsonObject fotElement = jsonElement.getAsJsonObject();
                 fotDeviceStream.setDeviceId(fotElement.get("id").getAsString());
                 fotDeviceStream.setLatitude(fotElement.get("latitude").getAsFloat());
@@ -253,5 +254,18 @@ public class StreamControllerImpl {
         this.pathLog = Paths.get(pathLog);
     }
    
+    /**
+     * @return the gatewayID
+     */
+    public String getGatewayID() {
+        return gatewayID;
+    }
+
+    /**
+     * @param gatewayID the gatewayID to set
+     */
+    public void setGatewayID(String gatewayID) {
+        this.gatewayID = gatewayID;
+    }
     
 }
