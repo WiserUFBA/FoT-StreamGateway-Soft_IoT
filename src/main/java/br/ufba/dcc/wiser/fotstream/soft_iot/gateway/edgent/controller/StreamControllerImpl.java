@@ -72,6 +72,7 @@ public class StreamControllerImpl {
             
         }catch(Exception e){
             UtilDebug.printDebugConsole("Error init StreamController: " + e.getMessage());
+            UtilDebug.printError(e);
         }
     }
     

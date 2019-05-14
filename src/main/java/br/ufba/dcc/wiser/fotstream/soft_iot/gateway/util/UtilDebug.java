@@ -20,4 +20,16 @@ public class UtilDebug {
         if(print)
             System.out.println(message);
     }
+    
+    public static void printError(Exception e){
+        System.out.println("Error " + e.getMessage());
+        StackTraceElement[] stack = e.getStackTrace();
+        for (StackTraceElement stackTraceElement : stack) {
+            System.out.println("Error class " + " " + stackTraceElement.getClassName());
+            System.out.println("Error file " + " " + stackTraceElement.getFileName());
+            System.out.println("Error method " + " " + stackTraceElement.getMethodName());
+            System.out.println("Error line " + " " + stackTraceElement.getLineNumber());
+                  
+        }
+   }
 }
