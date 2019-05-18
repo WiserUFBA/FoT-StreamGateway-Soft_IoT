@@ -77,11 +77,11 @@ public class StreamControllerImpl {
     }
     
     public void disconnect(){
-       System.out.println("Disconnect Stream");
+       System.out.println("Disconnect StreamControllerImpl FoT-StreamGateway");
        
        
-       Thread.currentThread().getThreadGroup().interrupt();
-       Thread.currentThread().getThreadGroup().destroy();
+       //Thread.currentThread().getThreadGroup().interrupt();
+       //Thread.currentThread().getThreadGroup().destroy();
        //Thread.currentThread().destroy();
     }
     
