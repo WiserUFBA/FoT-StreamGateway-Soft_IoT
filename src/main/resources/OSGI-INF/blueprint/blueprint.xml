@@ -44,13 +44,6 @@
     </bean>
     
     	
-    <!--
-    <bean id="TatuStreamController" class="br.ufba.dcc.wiser.soft_iot.analytics.data.TatuStream"
-                    init-method="start">
-           
-    </bean>
-    -->
-    
     <cm:property-placeholder persistent-id="br.ufba.dcc.wiser.fotstream.soft_iot.gateway"
 		update-strategy="reload">
 		
@@ -74,8 +67,6 @@
                 
 	</cm:property-placeholder>
 
-
-     <!--<service ref="StreamController" interface="br.ufba.dcc.wiser.soft_iot.analytics.edgent.StreamController"/>-->
 
 
 </blueprint>
