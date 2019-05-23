@@ -717,6 +717,7 @@ public class FoTSensorStream {
               sensorDataJson.addProperty("sensorId", sensorId);
               sensorDataJson.addProperty("localDateTime", dateTime);
               //sensorDataJson.addProperty("valueSensor", valueSensor);
+              sensorDataJson.addProperty("type", index.getSensor().type);
               
               JsonArray arrayData = new JsonArray();
               for (SensorData sensorDataColect : sensorData) {
