@@ -40,6 +40,7 @@ import moa.classifiers.core.driftdetection.EWMAChartDM;
 import moa.classifiers.core.driftdetection.GeometricMovingAverageDM;
 import moa.classifiers.core.driftdetection.HDDM_A_Test;
 import moa.classifiers.core.driftdetection.PageHinkleyDM;
+import moa.classifiers.core.driftdetection.ADWINChangeDetector;
 //import moa.classifiers.core.driftdetection.SEEDChangeDetector;
 import org.apache.edgent.connectors.mqtt.MqttConfig;
 import org.apache.edgent.connectors.mqtt.MqttStreams;
@@ -598,6 +599,8 @@ public class FoTSensorStream {
        //HDDM_A_Test detector = new HDDM_A_Test();
         
        //SEEDChangeDetector detector = new SEEDChangeDetector();
+       
+       
        
        System.out.println("Concept Drift Detector " + detector.getClass().toString());
        TStream<List<SensorData>> readings = windowData.batch((List, integer) -> {
